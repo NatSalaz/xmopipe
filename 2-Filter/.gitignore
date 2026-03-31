@@ -1,0 +1,5 @@
+filteredVideos/*
+filteredVideos_skeleton/
+filteredVideos_archery/
+.vscode
+__pycache__/

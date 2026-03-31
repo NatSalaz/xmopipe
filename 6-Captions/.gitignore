@@ -1,0 +1,16 @@
+mergedBodies/
+filteredVideos/
+out_body/
+tmp/
+video_*/
+videos/
+videosBBOX/
+videosBBOX/
+QwenVL3B_AWQ/
+QwenVL32B_AWQ/
+Qwen3-VL-8B-Instruct/*
+!Qwen3-VL-8B-Instruct/Qwen3VL8B.txt
+FastSAM-x.pt
+video_descriptions.json/
+.vscode
+__pycache__/

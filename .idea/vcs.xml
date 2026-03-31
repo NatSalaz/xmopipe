@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/6-Captions/QwenVL3B_AWQ" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Generation/TEMOS" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Generation/TEMOS/deps/distilbert-base-uncased" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Generation/emage_evaltools" vcs="Git" />
+  </component>
+</project>

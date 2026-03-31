@@ -1,0 +1,31 @@
+# RVQVAE on HML3D data
+
+model_type: "rvqvae"
+dataset_name: "t2m"
+data_root: null
+window_size: 64
+
+input_dim: 263
+latent_dim: 512
+hidden_dims: [512, 512, 512]
+
+num_quantizers: 6  # RVQ: nombre de quantizers
+
+num_embeddings: 512
+ema_decay: 0.99
+
+commitment_cost: 0.02
+
+recon_loss_weight: 1.0
+batch_size: 512
+num_epochs: 20000000
+learning_rate: 0.0002
+learning_rate_final: 0.0002
+weight_decay: 0.0
+
+use_scheduler: false
+early_stopping_patience: 10000
+quantizer_dropout: 0.2
+
+num_workers: 8
+seed: 42

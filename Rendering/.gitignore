@@ -1,0 +1,10 @@
+Pipeline/
+*.mp4
+*.png
+*.npz
+!render_example/example.npz
+videoTrack/
+Generation/
+data/smplx_models/smplx/SMPLX_NEUTRAL_2020.npz
+.vscode
+__pycache__/

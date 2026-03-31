@@ -1,0 +1,3 @@
+source_path,start_frame,end_frame,new_name
+./pose_data/video_001/video_001_merged_scene_2_body_0.npy,0,291,001_2_0.npy
+./pose_data/video_001/video_001_merged_scene_2_body_1.npy,0,291,001_2_1.npy

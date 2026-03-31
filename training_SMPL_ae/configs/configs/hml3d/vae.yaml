@@ -1,0 +1,38 @@
+# Classic VAE for HML3D dataset
+# Dataset
+
+model_type: "vae"
+dataset_name: "t2m" 
+data_root: null
+window_size: 64
+unit_length: 4
+subsampling: 1
+
+# Model
+input_dim: 263
+hidden_dims: [512, 512, 512] 
+latent_dim: 1024 
+
+# Training
+batch_size: 64
+num_epochs: 200
+learning_rate: 0.0001
+weight_decay: 0.0001
+grad_clip: 1.0  
+
+# Optimizer & Scheduler
+use_scheduler: true
+
+# Early stopping
+early_stopping_patience: 30
+
+# Logging
+log_every: 100  
+save_every: 100  
+
+# System
+num_workers: 8
+seed: 42
+
+# Model-specific (VAE here)
+beta: 1.0  # KL divergence weight (VAE only)

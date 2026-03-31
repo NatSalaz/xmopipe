@@ -1,0 +1,38 @@
+# VQVAE on HML3D data
+
+# Dataset
+model_type: "vqvae"
+dataset_name: "t2m"  # or "hml3dxmo" or "xmo"
+data_root: null  # null = use default paths
+window_size: 64
+token_length: 8
+
+subsampling: 1  # null = all the dataset, 0.1 = 10% of dataset
+# Model
+input_dim: 263
+latent_dim: 512  # latent space dimension
+hidden_dims: [512, 512]  #hidden dims dims
+num_embeddings: 512  # Taille du codebook
+vq_weight: 0.02  # Poids de la loss de commitment
+recon_weight: 0.5  # Poids de la loss de commitment
+
+# Training
+batch_size: 256
+num_epochs: 200
+learning_rate: 0.0002
+weight_decay: 0.0001
+grad_clip: 1.0  # Gradient clipping
+
+# Optimizer & Scheduler
+use_scheduler: true
+
+# Early stopping
+early_stopping_patience: 50
+
+# Logging
+log_every: 100  # Log to tensorboard every N steps
+save_every: 100  # Save checkpoint every N epochs
+
+# System
+num_workers: 8
+seed: 42

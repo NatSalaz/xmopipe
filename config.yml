@@ -1,0 +1,248 @@
+# =============================================================
+#  XmoPipe - Global configuration file
+#  Edit this file to adapt the pipeline to your setup.
+#
+#  Sections:
+#    1 - download   : YouTube scraping and scene cutting
+#    2 - filter     : Video filtering (YOLO pose, optical flow)
+#    3 - body       : Body pose estimation (GVHMR)
+#    4 - face       : Face expression and emotion (SMIRK + ResEmoteNet)
+#    5 - merge      : Face/body fusion and post-processing
+#    6 - captions   : Video captioning (Qwen3-VL)
+# =============================================================
+
+
+##############################################################
+# SECTION 1 - Download videos
+##############################################################
+
+download:
+  # Scraping (YTscrap.py)
+  request_limit: 90           # Max API requests per day (free Google quota: 100)
+  max_results_per_query: 20   # Max results returned per search query
+  duration_minutes: 60        # Total video duration to download per run (minutes)
+  scraped_dir: "scrapedVideos"  # Scraping output folder (relative to 1-Download/)
+  treated_file: "treated.txt"   # File tracking already downloaded videos
+
+  # Scene cutting (YTcut.py)
+  cut_dir: "cutVideos"          # Output folder after cutting (relative to 1-Download/)
+  min_scene_duration: 4.0       # Minimum scene duration to keep (seconds)
+
+  # Search query generation (YTPromptIdeas.py)
+  ollama_model: "qwen3:4b"      # Local Ollama model used to generate YouTube queries
+  prompts_per_theme: 7          # Number of YouTube queries generated per theme
+  ideas_file: "video_ideas.txt" # Output file for generated ideas (relative to 1-Download/)
+
+
+##############################################################
+# SECTION 2 - Filter videos
+##############################################################
+
+filter:
+  # Folders (relative to 2-Filter/)
+  input_dir: "../1-Download/cutVideos"  # Input folder (output of step 1)
+  output_dir: "filteredVideos"          # Output folder for filtered videos
+
+  # Pose model
+  pose_model: "yolo11n-pose.pt"   # YOLO model used for pose detection
+
+  # Body detection thresholds
+  body_confidence_threshold: 0.65  # Minimum confidence score to validate a detection
+  min_bbox_area: 60000             # Minimum bounding box area (px2) - filters out small/distant people
+  crowd_person_threshold: 7        # Number of people above which the scene is flagged as crowd
+
+  # Optical flow segmentation thresholds
+  optical_flow_threshold: 0.01     # Flow too high -> cut (camera moving too fast)
+  low_flow_threshold: 0.00001      # Flow too low -> cut (static scene)
+  optical_flow_frame_skip: 5       # Compute optical flow every N frames (performance)
+
+  # Durations (in seconds, converted to frames via fps at runtime)
+  min_segment_duration_sec: 2.0    # Minimum segment duration to keep
+  non_human_tolerance_sec: 0.5     # Max duration without a human before cut
+  bad_bbox_tolerance_sec: 1.0      # Max duration of too-small bboxes before cut
+  static_flow_tolerance_sec: 1.0   # Max duration of static flow before cut
+  high_flow_tolerance_sec: 1.0     # Max duration of high flow before cut
+  cut_margin_sec: 2.0              # Frame buffer kept in memory before flush
+
+  # Segment length
+  max_segment_length: 500          # Max number of frames per output segment
+
+  # Person re-identification between frames
+  reid_iou_threshold: 0.3          # IoU below which a new person is assumed
+  reid_area_ratio_min: 0.66        # Min bbox area ratio current/previous (Re-ID)
+  reid_area_ratio_max: 1.5         # Max bbox area ratio current/previous (Re-ID)
+  reid_keypoint_displacement: 300.0  # Max keypoint displacement before Re-ID (pixels)
+
+  # Freeze detection and YOLO tracking
+  frozen_frames_threshold: 10      # Consecutive identical frames before cut (frozen video)
+  yolo_tracking_iou: 0.5           # IoU used by YOLO for inter-frame tracking
+
+  # Multiprocessing
+  workers_per_gpu: 4               # Number of parallel workers per GPU
+
+
+##############################################################
+# SECTION 3 - Body pose estimation (GVHMR)
+##############################################################
+
+body:
+  # Folders (relative to 3-Body/GVHMR/)
+  input_dir: "../../2-Filter/filteredVideos"  # Input folder (output of step 2)
+  output_dir: "out_body"                      # Output folder for body NPZs
+
+  # Video length
+  max_frames: 500          # Max frames per video (longer videos are truncated)
+
+  # Preprocessing: detection and 2D pose
+  bbox_enlarge_factor: 1.2         # Bounding box enlargement factor before VitPose
+  vitpose_confidence_threshold: 0.55  # Min average confidence to keep a VitPose track
+
+  # SLAM (camera motion estimation via DPVO)
+  slam_buffer: 4000        # DPVO buffer size (number of frames kept in memory)
+  slam_resize: 0.5         # Video resize factor before SLAM (performance)
+
+  # Temporary video encoding (ffmpeg)
+  ffmpeg_crf: 23           # ffmpeg encoding quality (0=lossless, 51=worst, 23=default)
+
+  # GPU and parallelism
+  gpu_memory_fraction: 0.8   # GPU memory fraction allocated per process (0.0 to 1.0)
+  max_workers: 1             # Number of videos processed in parallel (>1 needs more VRAM)
+
+  # Resilience
+  max_no_reservation_cycles: 10  # Max cycles without an available video before stopping
+  retry_wait_sec: 10             # Wait time (seconds) between retry cycles
+
+
+##############################################################
+# SECTION 4 - Face expression and emotion (SMIRK + ResEmoteNet)
+##############################################################
+
+face:
+  # Folders (relative to 4-Face/smirk/)
+  input_dir: "../../../2-Filter/filteredVideos"  # Input folder (output of step 2)
+  output_dir: "./out_face"                       # Output folder for face NPZs
+
+  # Model checkpoints
+  smirk_checkpoint: "trained_models/SMIRK_em1.pt"   # SMIRK encoder checkpoint
+  emotion_checkpoint: "fer2013_model.pth"             # ResEmoteNet checkpoint
+  yolo_model: "yolov8l_100e.pt"                       # YOLO model for face detection
+  mediapipe_model: "assets/face_landmarker.task"      # MediaPipe face landmarker model
+
+  # GPU
+  device: "cuda"
+  gpu_memory_fraction: 0.9      # GPU memory fraction allocated
+
+  # Video processing
+  batch_size: 4                  # Batch size for frame processing
+  max_frames: 500                # Max frames per video
+
+  # Image preprocessing
+  input_image_size: 224          # Input image size (pixels)
+  upscale_factor: 2              # Upscaling factor before YOLO detection (improves accuracy)
+  crop_scale: 1.4                # Zoom factor when cropping the face (crop_face)
+  yolo_face_confidence: 0.5      # YOLO confidence threshold for face detection
+
+  # DataLoader
+  dataloader_workers: 4          # Number of DataLoader workers
+  dataloader_prefetch_factor: 2  # DataLoader prefetch factor
+
+  # Emotion parallelism
+  emotion_threads: 8             # Number of threads for emotion inference (ThreadPoolExecutor)
+
+  # Face tracking (BetterFaceTracker)
+  face_tracker_max_miss: 30          # Max missed frames before losing a face track
+  face_tracker_iou_threshold: 0.3    # IoU threshold for tracking association
+  face_tracker_appearance_weight: 0.5  # Weight of appearance vs IoU in association
+
+  # MediaPipe FaceLandmarker
+  mediapipe_num_faces: 1                     # Max number of faces detected simultaneously
+  mediapipe_min_detection_confidence: 0.05   # Minimum detection confidence threshold
+  mediapipe_min_presence_confidence: 0.03    # Minimum presence confidence threshold
+
+  # Tracking file
+  tracking_file: "face_tracking"  # Name of the video tracking file
+
+
+##############################################################
+# SECTION 5 - Face/body fusion and post-processing (Merge)
+##############################################################
+
+merge:
+  # Folders (relative to 5-Merge/mergepp/)
+  input_body_dir: "../../3-Body/GVHMR/out_body"     # Step 3 output (body NPZs)
+  input_face_dir: "../../4-Face/smirk/out_face"     # Step 4 output (face NPZs)
+  output_merged_dir: "./videosMerged"                # Face+body fusion output (intermediate)
+  output_ppmerged_dir: "./videosPPmerged"            # Final output after post-processing
+
+  # SMPL-X model
+  smplx_model_dir: "data/smplx_models/smplx"  # Folder containing SMPL-X models
+  smplx_gender: "NEUTRAL_2020"                # SMPL-X gender model
+  device: "cuda"
+
+  # Resampling
+  target_fps: 30     # Target FPS after resampling
+  fallback_fps: 30   # FPS used when metadata contains no FPS value
+
+  # Motion detection (filters out static sequences)
+  motion_th_dtheta: 0.02  # Min average rotation (Δθ) to consider the sequence as moving
+  motion_th_jerk: 0.05    # Min average jerk to consider the sequence as moving
+
+  # Smoothing
+  emotion_smooth_window: 20  # Emotion smoothing window (majority vote)
+  gaussian_window: 5         # Island removal window before Gaussian smoothing
+  gaussian_sigma: 1.0        # Gaussian filter sigma (expressions and jaw pose)
+
+
+##############################################################
+# SECTION 6 - Video captioning (Qwen3-VL)
+##############################################################
+
+captions:
+  # Folders (relative to 6-Captions/)
+  video_root: "../2-Filter/filteredVideos"          # Source videos (output of step 2)
+  npz_root: "../5-Merge/mergepp/videosPPmerged"     # Merged NPZs (output of step 5)
+
+  # Model
+  model_path: "Qwen3-VL-8B-Instruct/Qwen3VL8B"  # Local path to the Qwen3-VL model
+
+  # Inference
+  max_tokens: 2048          # Max tokens generated per inference call
+  max_pixels: 777600        # Max video frame resolution (1080x720)
+  inference_fps: 5.0        # Video sampling FPS for inference
+
+  # Parallelism
+  num_videos: 1    # Number of videos reserved per cycle
+  workers: 1       # Number of parallel workers
+
+  # Resilience
+  retry_wait_sec: 10         # Wait time (s) when no video is available
+  temp_video_max_wait_sec: 30  # Max wait time (s) for temp video creation
+
+  # Tracking file
+  tracking_file: "qwen_tracking"  # Name of the video tracking file
+
+
+##############################################################
+# SECTION 6bis - Caption augmentation (Qwen3-4B)
+##############################################################
+
+captions_augm:
+  # Folders (relative to 6bis-Captions_augm/)
+  npz_root: "../5-Merge/mergepp/videosPPmerged"  # Merged NPZs + description JSONs (output of step 5+6)
+  output_dir: "./augm_txts"                       # Output folder for augmented text files
+  pos_output_dir: "./augm_txt_pos"                # Output folder for POS-tagged text files
+
+  # Model
+  model_name: "Qwen/Qwen3-4B-FP8"  # HuggingFace model name for caption augmentation
+
+  # Generation
+  num_samples: 10        # Number of NPZ samples to augment per run
+  max_new_tokens: 32768  # Max tokens generated per augmentation call
+
+
+##############################################################
+# SECTION 7 - Conversion to HumanML3D/HumanTOMATO format
+##############################################################
+
+conversion:
+  ex_fps: 30  # Target FPS for the converted motion data (must match merge.target_fps)

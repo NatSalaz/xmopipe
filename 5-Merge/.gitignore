@@ -1,0 +1,15 @@
+logs/
+npzs/
+output/
+videosTestBody/
+videosTestFace/
+videosTestMerged/
+videosPPmerged/
+mergepp/data/smplx_models/smplx/SMPLX_NEUTRAL_2020.npz
+mergepp/videosMerged/*
+video_002/
+worst_videos/
+best_videos/
+render_utils/
+.vscode
+__pycache__/

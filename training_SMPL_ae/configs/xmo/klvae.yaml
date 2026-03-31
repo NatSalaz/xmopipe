@@ -1,0 +1,43 @@
+# KLVAE config on xmo data
+# Dataset
+model_type: "klvae"
+dataset_name: "xmo"
+data_root: null 
+window_size: 64
+token_length: 8
+subsampling: 1  
+
+# Model
+input_dim: 263
+latent_dim: 256  
+recon_weight: 1  # recons_loss="l1_smooth"
+dropout_prob: 0.2
+
+# Training
+batch_size: 256
+num_epochs: 100000  
+learning_rate: 0.00005
+final_learning_rate: null
+weight_decay: 0.0
+grad_clip: null
+
+# Optimizer & Scheduler
+use_scheduler: true
+lr_scheduler: [200000] 
+warmup_steps: 1000
+mu: 0.99
+gamma: 0.05
+# Early stopping
+early_stopping_patience: null
+
+# Logging
+log_every: 100  # print_iter
+save_every: 100
+
+# System
+num_workers: 8
+seed: 123
+stride_t: 2
+down_t: 3
+depth: 3
+dilation_growth_rate: 3

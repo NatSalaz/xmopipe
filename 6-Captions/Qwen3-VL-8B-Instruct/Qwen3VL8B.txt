@@ -1,0 +1,6 @@
+Model can be found at 
+
+https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct
+
+Qwen-VL: arXiv:2308.12966
+Qwen3 Technical Report : arXiv:2505.09388
