@@ -13,7 +13,7 @@ fi
 source "$CONDA_SH"
 
 # Environment 1: xmo-3d (steps 1-5)
- echo "[1/2] Creating xmo-3d (steps 1-5: Download, Filter, Body, Face, Merge)"
+ echo "1/2 - Creating xmo-3d (steps 1-5: Download, Filter, Body, Face, Merge)"
  conda env create -f xmo-3d.yml
  conda activate xmo-3d
  
@@ -44,7 +44,7 @@ source "$CONDA_SH"
  conda deactivate
  
 # Environment 2: xmo-llm (steps 6-6b)
-echo "[2/2] Creating xmo-llm (steps 6-6b: Captions, Caption augmentation)"
+echo "2/2 - Creating xmo-llm (steps 6-6b: Captions, Caption augmentation)"
 conda env create -f xmo-llm.yml
 conda activate xmo-llm
 
@@ -59,6 +59,8 @@ pip install "ftfy==6.3.1" "regex==2026.3.32"
 pip install "git+https://github.com/openai/CLIP.git@d05afc436d78f1c48dc0dbf8e5980a9d471f35f6"
 pip install "git+https://github.com/CASIA-LMC-Lab/FastSAM.git@b4ed20c2fed75eadc5aa7d8b09fedd137b873b52" --no-deps
 pip install "ultralytics==8.0.120"
+pip install "wordcloud"
+pip install "nltk"
 
 echo "Downloading spacy language model"
 python -m spacy download en_core_web_sm

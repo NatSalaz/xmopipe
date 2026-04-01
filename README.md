@@ -25,41 +25,36 @@ cd 6b-Captions_augm  && ./caption.sh    # needs step 6
 
 ## Installation
 
+### Tested on
+
+| Component | Version |
+|---|---|
+| OS | Ubuntu 24.04.4 LTS |
+| Kernel | Linux 6.17.0-19-generic |
+| GPU | NVIDIA RTX 2000 Ada Generation 8 GB |
+| CPU | Intel Core Ultra 7 165H |
+| CUDA | 12.1 |
+
 ### Prerequisites
 - [Anaconda](https://www.anaconda.com/download) or Miniconda
-- NVIDIA GPU with CUDA 12.1+
+- NVIDIA GPU with CUDA 12.1
 - FFmpeg (`sudo apt install ffmpeg`)
 - [Ollama](https://ollama.com/) for the optional step 1 query generation (`YTPromptIdeas.py`)
 
-### Conda environments
-
-Each step runs in its own conda environment. Create them from the provided `.yml` files:
+### Quick install
 
 ```bash
-# Steps 1 & 2 - Download + Filter
-conda env create -f 2-Filter/ytfilter.yml
-
-# Step 3 - Body (same environment is also used for step 5)
-conda env create -f 3-Body/gvhmr.yml
-
-# Step 4 - Face
-conda env create -f 4-Face/smirk/smirk2.yml
-
-# Steps 6 & 6b - Captions (no yml provided, install manually)
-# See 6-Captions/README.md
+git clone <repo-url>
+cd xmopipe
+bash setup.sh      # creates xmo-3d and xmo-llm conda environments (~30 min)
+bash download.sh   # downloads all model checkpoints (~10 GB)
 ```
 
-> **Note:** the environment names in the `.sh` scripts match the author's local setup. If you create envs from the `.yml` files, update the `conda activate <name>` line in each `.sh` to match your environment name.
+`setup.sh` creates two environments:
+- `xmo-3d` — steps 1–5 (Python 3.10, torch 2.3.0+cu121, pytorch3d)
+- `xmo-llm` — steps 6–6b (Python 3.11, torch 2.5.1+cu121)
 
-| Script | Author's env name | Name in .yml |
-|---|---|---|
-| `1-Download/download.sh` | `filterfusion` | `filter` |
-| `2-Filter/filter.sh` | `filtertest` | `filter` |
-| `3-Body/body.sh` | `gvhmr_jz` | `gvhmr` |
-| `4-Face/face.sh` | `smirk2` | `smirk2` ✓ |
-| `5-Merge/mergePP.sh` | `gvhmr_jz` | `gvhmr` |
-| `6-Captions/caption.sh` | `qwen` | *(no yml)* |
-| `6b-Captions_augm/caption.sh` | `qwen` | *(no yml)* |
+`download.sh` downloads checkpoints for GVHMR, SMIRK, FastSAM, and ResEmoteNet into the expected paths. Files already present are skipped.
 
 ### YouTube API key
 
