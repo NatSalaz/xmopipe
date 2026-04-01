@@ -40,11 +40,11 @@ for i in range(_cfg["num_samples"]):
     print("Fichier NPZ choisi :", npz_path)
     print("Clés du NPZ :", list(data_npz.keys()))
 
-    # Récupération du texte depuis le JSON
+    # Load text from JSON
     json_path = os.path.join(root_dir, video_dir, f"description_videos_{video_id}.json")
 
     if not os.path.isfile(json_path):
-        raise FileNotFoundError(f"Fichier JSON introuvable : {json_path}")
+        raise FileNotFoundError(f"JSON file not found: {json_path}")
 
     with open(json_path, "r") as f:
         descriptions = json.load(f)
@@ -92,7 +92,7 @@ for i in range(_cfg["num_samples"]):
         if line:
             clean_lines.append(line)
 
-    # Une phrase par ligne, sans ligne vide
+    # One sentence per line, no blank lines
     final_text = "\n".join(clean_lines)
 
     # Affichage

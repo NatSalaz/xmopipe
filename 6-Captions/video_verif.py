@@ -333,7 +333,7 @@ class VideoTracker:
                         "heartbeats": {},
                     }
 
-                # Ajout dans 'processed'
+                # Add to 'processed'
                 if os.path.exists(video_path_str):
                     timestamp = os.path.getmtime(video_path_str)
                 else:
@@ -354,7 +354,7 @@ class VideoTracker:
                     ),
                 }
 
-                # Suppression de 'in_progress'
+                # Remove from 'in_progress'
                 data["in_progress"].pop(video_path_str, None)
 
                 # Écriture atomique sécurisée
@@ -364,9 +364,9 @@ class VideoTracker:
                 if video_path_str in self._tracked_videos:
                     self._tracked_videos.remove(video_path_str)
 
-                Log.info(f"Vidéo marquée comme traitée : {video_path_str}")
+                Log.info(f"Video marked as processed: {video_path_str}")
 
-                # Vérification du dossier
+                # Check subfolder
                 subfolder_path = Path(video_path).parent
                 if self.is_subfolder_fully_processed(subfolder_path):
                     Log.info(f"Dossier complet : {subfolder_path}")
@@ -734,7 +734,7 @@ class VideoTracker:
                         data.setdefault("heartbeats", {})
                         data["heartbeats"][heartbeat_pid] = {
                             "timestamp": timestamp_now,
-                            "videos": local_videos,  # ✅ uniquement les vidéos de CE dossier
+                            "videos": local_videos,  # only videos from THIS folder
                         }
 
                         safe_write_json_atomic(tracking_file, data)

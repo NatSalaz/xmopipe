@@ -260,7 +260,7 @@ class VideoTracker:
                     Log.warning(f"Corrupted JSON detected in {tracking_file}, reinitializing.")
                     data = {"processed": {}, "in_progress": {}, "failed": {}, "heartbeats": {}}
 
-                # Ajout dans 'processed'
+                # Add to 'processed'
                 if os.path.exists(video_path_str):
                     timestamp = os.path.getmtime(video_path_str)
                 else:
@@ -273,7 +273,7 @@ class VideoTracker:
                     "date_processed": metadata.get("date_processed", datetime.datetime.now().isoformat())
                 }
 
-                # Suppression de 'in_progress'
+                # Remove from 'in_progress'
                 data["in_progress"].pop(video_path_str, None)
 
                 # Écriture atomique sécurisée
@@ -285,7 +285,7 @@ class VideoTracker:
 
                 Log.info(f"Vidéo marquée comme traitée : {video_path_str}")
 
-                # Vérification du dossier
+                # Check subfolder
                 subfolder_path = Path(video_path).parent
                 if self.is_subfolder_fully_processed(subfolder_path):
                     Log.info(f"Dossier complet : {subfolder_path}")
@@ -584,7 +584,7 @@ class VideoTracker:
                         data.setdefault("heartbeats", {})
                         data["heartbeats"][heartbeat_pid] = {
                             "timestamp": timestamp_now,
-                            "videos": local_videos  # ✅ uniquement les vidéos de CE dossier
+                            "videos": local_videos  # only videos from THIS folder
                         }
 
                         safe_write_json_atomic(tracking_file, data)

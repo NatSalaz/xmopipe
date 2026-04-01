@@ -36,7 +36,7 @@ def trim_flagged_borders(flagged: np.ndarray, max_gap: int = 10):
         f = flagged[j]
         if f:
             any_true, false_run = True, 0
-            stop = j  # directement sur le True
+            stop = j  # directly on the True value
         elif any_true:
             false_run += 1
             if false_run > max_gap:

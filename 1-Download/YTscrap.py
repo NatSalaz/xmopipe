@@ -14,10 +14,6 @@ import concurrent.futures
 import time
 import yaml
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv()
-
 _cfg = yaml.safe_load(open(Path(__file__).parent.parent / "config.yml"))["download"]
 
 # OK, since we request with a Google API, we need to limit our requests.
@@ -25,7 +21,7 @@ global_request_count = 0
 REQUEST_LIMIT = _cfg["request_limit"]
 VERBOSE = False
 TREATED_FILE = _cfg["treated_file"]
-API_KEY = os.environ.get("YOUTUBE_API_KEY", "")  # Set YOUTUBE_API_KEY in .env file
+API_KEY = _cfg["youtube_api_key"]
 
 
 # Utils functions

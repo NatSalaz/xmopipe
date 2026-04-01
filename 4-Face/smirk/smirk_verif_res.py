@@ -774,11 +774,11 @@ def main():
     for video_path in all_video_paths:
         if not videoTracker.is_video_available(video_path):
             if args.verbose:
-                print(f"Vidéo déjà traitée ou en cours : {video_path}")
+                print(f"Video already processed or in progress: {video_path}")
             continue
         if not videoTracker.mark_video_in_progress(video_path):
             if args.verbose:
-                print(f"Impossible de marquer la vidéo comme en cours : {video_path}")
+                print(f"Could not mark video as in progress: {video_path}")
             continue
         rel_path = Path(video_path).relative_to(input_root)
         output_subdir = Path(args.output_root) / rel_path.parent
@@ -813,13 +813,13 @@ def main():
                 print("Merging npzs")
         except Exception as e:
             if "out of memory" in str(e).lower() or "cuda" in str(e).lower():
-                print(f"[OOM] Erreur mémoire pour {video_path}, passage à la suivante")
+                print(f"[OOM] Out of memory for {video_path}, skipping")
                 videoTracker.mark_video_failed(video_path, f"OOM: {str(e)}")
             else:
                 tb = traceback.format_exc()
                 videoTracker.mark_video_failed(video_path, str(e))
                 if args.verbose:
-                    print(f"Erreur lors du traitement de {video_path} : {e}")
+                    print(f"Error processing {video_path}: {e}")
         finally:
             torch.cuda.empty_cache()
             gc.collect()

@@ -8,13 +8,13 @@ Multi-stage motion capture pipeline from YouTube videos, producing a dataset in 
 
 ### All parameters are centralized in [`config.yml`](config.yml) at the root of the repo. Edit it before running anything.
 
-Run the steps in the following order. Steps 3 and 4 are independent and can run in parallel across machines - each script uses a file-based locking system (`video_verif.py`) to avoid conflicts.
+Run the steps in the following order. Steps 3 and 4 are independent and can run in parallel across multiple machines - each script uses a file-based locking system (`video_verif.py`) to avoid conflicts.
 
 ```bash
 cd 1-Download        && ./download.sh
 cd 2-Filter          && ./filter.sh
-cd 3-Body            && ./body.sh       # can run in parallel with step 4
-cd 4-Face            && ./face.sh       # can run in parallel with step 3
+cd 3-Body            && ./body.sh       # can run in parallel with step 4 on a separate machine
+cd 4-Face            && ./face.sh       # can run in parallel with step 3 on a separate machine
 cd 5-Merge           && ./mergePP.sh    # needs steps 3 and 4 to be complete
 cd 6-Captions        && ./caption.sh    # needs step 5
 cd 6b-Captions_augm  && ./caption.sh    # needs step 6

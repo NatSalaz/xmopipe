@@ -855,7 +855,7 @@ def reorder_and_rename_clips(folder_path):
         if os.path.exists(old_path):
             os.rename(old_path, new_path)
         else:
-            print(f"Fichier manquant : {old_name}")
+            print(f"Missing file: {old_name}")
 
         line = f"{new_name} : {start} - {end}"
         if extra:

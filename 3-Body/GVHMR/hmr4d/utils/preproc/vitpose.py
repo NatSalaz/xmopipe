@@ -21,7 +21,7 @@ class VitPoseExtractor:
 
     @torch.no_grad()
     def extract(self, video_path, bbx_xys, img_ds=0.5):
-        # Récupération du batch d'images
+        # Load image batch
         if isinstance(video_path, str):
             imgs, bbx_xys = get_batch(video_path, bbx_xys, img_ds=img_ds)
         else:
@@ -31,7 +31,7 @@ class VitPoseExtractor:
         L, _, H, W = imgs.shape  # (L, 3, H, W)
         batch_size = 16
         kp2d_list = []
-        low_conf_frame_indices = []  # liste pour stocker les indices des frames à faible confiance
+        low_conf_frame_indices = []  # list to store indices of low-confidence frames
 
         for j in tqdm(range(0, L, batch_size), desc="ViTPose", leave=self.tqdm_leave, disable=True):
             imgs_batch = imgs[j : j + batch_size, :, :, 32:224].cuda()
@@ -49,13 +49,13 @@ class VitPoseExtractor:
             scale = (torch.cat((bbx_xys_batch[:, [2]] * 24 / 32, bbx_xys_batch[:, [2]]), dim=1) / 200).numpy()
             preds, maxvals = keypoints_from_heatmaps(heatmaps=heatmap, center=center, scale=scale, use_udp=True)
 
-            # Calcul de la confiance moyenne par frame
+            # Compute average confidence per frame
             avg_conf = np.mean(maxvals, axis=(1, 2))  # (B,)
-            low_conf_batch = avg_conf < 0.5  # Flag pour chaque frame du batch
+            low_conf_batch = avg_conf < 0.5  # flag per frame in the batch
 
-            # Conversion des indices trouvés en liste Python
+            # Convert found indices to Python list
             indices = np.where(low_conf_batch)[0].tolist()
-            # Ajout de l'offset pour obtenir l'indice global dans la vidéo
+            # Add offset to get global index in the video
             indices = [idx + j for idx in indices]
             low_conf_frame_indices.extend(indices)
 
@@ -65,7 +65,7 @@ class VitPoseExtractor:
 
         vitpose = torch.cat(kp2d_list, dim=0)
 
-        # Ici low_conf_frame_indices est déjà une liste Python, par exemple: [146, 147, ...]
+        # low_conf_frame_indices is already a Python list, e.g. [146, 147, ...]
         return vitpose, low_conf_frame_indices
 
 

@@ -145,7 +145,7 @@ def run_preprocess(cfg):
         torch.save({"vitpose": all_vitpose, "flagged": all_flagged_vit}, paths.vitpose)
         del vitpose_extractor
 
-        # Filtrer les bbox également
+        # Also filter bboxes
         all_bbx_xys = [all_bbx_xys[i] for i in valid_indices]
         all_bbx_xyxy = [all_bbx_xyxy[i] for i in valid_indices]
         torch.save({"bbx_xyxy": all_bbx_xyxy, "bbx_xys": all_bbx_xys}, paths.bbx)  # overwrite

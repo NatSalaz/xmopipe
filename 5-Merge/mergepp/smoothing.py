@@ -99,17 +99,17 @@ def remove_islands(data2D, window_length):
     n = orig.shape[0]
     i = 0
     while i < n:
-        # Si la ligne contient au moins une valeur non nulle
+        # If the row has at least one non-zero value
         if np.any(orig[i] != 0):
             start = i
-            # On avance tant que la ligne contient au moins une valeur non nulle
+            # Advance while the row has at least one non-zero value
             while i < n and np.any(orig[i] != 0):
                 i += 1
             end = i - 1
-            # Vérifier que l'île est encadrée par des lignes entièrement à 0
+            # Check that the island is surrounded by all-zero rows
             if start > 0 and i < n:
                 if np.all(orig[start - 1] == 0) and np.all(orig[i] == 0):
-                    # Si l'île est plus petite que window_length, on la supprime
+                    # If the island is smaller than window_length, remove it
                     if (end - start + 1) < window_length:
                         islrem[start : end + 1, :] = 0
         else:
@@ -123,46 +123,46 @@ from scipy.ndimage import gaussian_filter1d
 
 def smooth2D_gaussian(data2D, window_length, sigma):
     """
-    Applique d'abord la suppression des îlots puis un filtre gaussien
-    sur l'axe temporel (chaque colonne séparément).
+    First removes islands then applies a Gaussian filter
+    along the time axis (each column separately).
 
     Parameters:
       data2D : np.array
-          Tableau 2D avec le temps sur l'axe 0.
+          2D array with time on axis 0.
       window_length : int
-          Paramètre pour la suppression des îlots.
+          Parameter for island removal.
       sigma : float
-          Écart-type de la gaussienne pour le lissage.
+          Standard deviation of the Gaussian for smoothing.
 
     Returns:
-      np.array : Tableau lissé.
+      np.array : Smoothed array.
     """
-    # Étape 1 : suppression des îlots
+    # Step 1: island removal
     data_clean = remove_islands(data2D, window_length)
 
-    # Étape 2 : lissage par filtre gaussien le long de l'axe 0 (temps)
+    # Step 2: Gaussian filter along axis 0 (time)
     smoothed = gaussian_filter1d(data_clean, sigma=sigma, axis=0)
     return smoothed
 
 
 def smooth2D_moving_average(data2D, window_length):
     """
-    Applique d'abord la suppression des îlots puis lissage par moyenne mobile
-    sur l'axe temporel (chaque colonne séparément).
+    First removes islands then applies a moving average
+    along the time axis (each column separately).
 
     Parameters:
       data2D : np.array
-          Tableau 2D avec le temps sur l'axe 0.
+          2D array with time on axis 0.
       window_length : int
-          Taille de la fenêtre pour la suppression des îlots et le lissage.
+          Window size for island removal and smoothing.
 
     Returns:
-      np.array : Tableau lissé.
+      np.array : Smoothed array.
     """
-    # Étape 1 : suppression des îlots
+    # Step 1: island removal
     data_clean = remove_islands(data2D, window_length)
 
-    # Étape 2 : lissage par moyenne mobile pour chaque colonne
+    # Step 2: moving average per column
     kernel = np.ones(window_length) / window_length
     smoothed = np.apply_along_axis(
         lambda x: np.convolve(x, kernel, mode="same"), axis=0, arr=data_clean

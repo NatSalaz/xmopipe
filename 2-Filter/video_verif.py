@@ -339,7 +339,7 @@ class VideoTracker:
                         "heartbeats": {},
                     }
 
-                # Ajout dans 'processed'
+                # Add to 'processed'
                 if os.path.exists(video_path_str):
                     timestamp = os.path.getmtime(video_path_str)
                 else:

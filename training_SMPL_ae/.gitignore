@@ -1,0 +1,6 @@
+joints/*
+pose_data/*
+XmoPipe/
+body_models/*/*.npz
+inspect_rvqvae.py
+diagnose_recon.py

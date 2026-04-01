@@ -69,9 +69,9 @@ class SLAMModel(object):
         for _ in range(12):
             self.slam.update()
 
-        self.reader.join()  # Attend que le processus de lecture se termine
-        
-        # Ajoutez ces deux lignes pour fermer proprement la Queue
+        self.reader.join()  # Wait for the reader process to finish
+
+        # Close the Queue cleanly
         self.queue.close()
         self.queue.join_thread()
         

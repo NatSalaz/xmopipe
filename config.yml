@@ -17,10 +17,13 @@
 ##############################################################
 
 download:
+  # YouTube Data v3 API key (console.cloud.google.com -> APIs & Services -> Credentials)
+  youtube_api_key: "AIzaSyB24gu0D_JmnNduYoRwQsPpVX1m81qDdhA"
+
   # Scraping (YTscrap.py)
   request_limit: 90           # Max API requests per day (free Google quota: 100)
   max_results_per_query: 20   # Max results returned per search query
-  duration_minutes: 60        # Total video duration to download per run (minutes)
+  duration_minutes: 1        # Total video duration to download per run (minutes)
   scraped_dir: "scrapedVideos"  # Scraping output folder (relative to 1-Download/)
   treated_file: "treated.txt"   # File tracking already downloaded videos
 
@@ -30,7 +33,7 @@ download:
 
   # Search query generation (YTPromptIdeas.py)
   ollama_model: "qwen3:4b"      # Local Ollama model used to generate YouTube queries
-  prompts_per_theme: 7          # Number of YouTube queries generated per theme
+  prompts_per_theme: 3          # Number of YouTube queries generated per theme
   ideas_file: "video_ideas.txt" # Output file for generated ideas (relative to 1-Download/)
 
 
@@ -119,7 +122,7 @@ body:
 
 face:
   # Folders (relative to 4-Face/smirk/)
-  input_dir: "../../../2-Filter/filteredVideos"  # Input folder (output of step 2)
+  input_dir: "../../2-Filter/filteredVideos"  # Input folder (output of step 2)
   output_dir: "./out_face"                       # Output folder for face NPZs
 
   # Model checkpoints
