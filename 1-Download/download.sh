@@ -1,6 +1,6 @@
 #!/bin/bash
 source ~/anaconda3/etc/profile.d/conda.sh
-conda activate filterfusion
+conda activate xmo-3d
 
 # You'll need to provide the search terms before in videos_ideas.txt.
 # We have a script named YTPromptIdeas.py that can help you generate those ideas using an LLM.

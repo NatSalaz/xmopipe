@@ -1,0 +1,10 @@
+Download the DMPL models from the SMPL website:
+
+1. Go to https://smpl.is.tue.mpg.de
+2. Create an account or log in
+3. Navigate to the "Downloads" section
+4. Download "DMPLs compatible with SMPL" (dmpls.tar.xz)
+5. Extract the archive and place the content in this folder.
+
+Alternatively, the DMPL models are also available via the AMASS project:
+https://amass.is.tue.mpg.de

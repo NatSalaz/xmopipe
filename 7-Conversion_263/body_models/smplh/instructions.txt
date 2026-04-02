@@ -1,0 +1,10 @@
+Download the SMPL+H models from the AMASS website:
+
+1. Go to https://mano.is.tue.mpg.de
+2. Create an account or log in
+3. Navigate to the "Downloads" section
+4. Download "Extended SMPL+H model  (used in AMASS project)" (smplh.tar.xz)
+5. Extract the archive and place the content in this folder.
+
+Note: This model uses 16 shape parameters (instead of the original 10) and has locked head vertices.
+It is licensed for non-commercial use only (research, education, art).

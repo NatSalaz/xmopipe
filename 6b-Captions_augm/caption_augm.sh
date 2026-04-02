@@ -1,6 +1,6 @@
 #!/bin/bash
 source ~/anaconda3/etc/profile.d/conda.sh
-conda activate qwen
+conda activate xmo-llm
 
 start_time=$(date +%s)
 

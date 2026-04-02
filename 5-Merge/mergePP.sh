@@ -1,9 +1,9 @@
 #!/bin/bash
 source ~/anaconda3/etc/profile.d/conda.sh
-conda activate gvhmr_jz
+conda activate xmo-3d
 echo "Active env : $(conda info --envs)"
 
-# Chemins lus depuis config.yml (sections body/face/merge)
+# Paths read from config.yml (sections body/face/merge)
 FILTER_DIR=$(python -c "import yaml; c=yaml.safe_load(open('../config.yml')); print(c['body']['input_dir'])")
 BODY_NPZ=$(python -c "import yaml; c=yaml.safe_load(open('../config.yml')); print(c['body']['output_dir'])")
 FACE_NPZ=$(python -c "import yaml; c=yaml.safe_load(open('../config.yml')); print(c['face']['output_dir'])")
@@ -12,7 +12,7 @@ INPUT_FACE=$(python -c "import yaml; c=yaml.safe_load(open('../config.yml')); pr
 OUTPUT_MERGED=$(python -c "import yaml; c=yaml.safe_load(open('../config.yml')); print(c['merge']['output_merged_dir'])")
 OUTPUT_PP=$(python -c "import yaml; c=yaml.safe_load(open('../config.yml')); print(c['merge']['output_ppmerged_dir'])")
 
-echo "Merging into the npzs everything that what we may have missed before (Process not finished for example)."
+echo "Merging into npzs anything that may have been missed (e.g. unfinished processes)."
 cd ../3-Body/GVHMR
 python post_merge_bodies.py --input_root "$FILTER_DIR" --npz_root "$BODY_NPZ"
 cd ../../4-Face/smirk

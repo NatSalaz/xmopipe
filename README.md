@@ -4,22 +4,7 @@ Multi-stage motion capture pipeline from YouTube videos, producing a dataset in 
 
 ---
 
-## Quick start
 
-### All parameters are centralized in [`config.yml`](config.yml) at the root of the repo. Edit it before running anything.
-
-Run the steps in the following order. Steps 3 and 4 are independent and can run in parallel across multiple machines - each script uses a file-based locking system (`video_verif.py`) to avoid conflicts.
-
-```bash
-cd 1-Download        && ./download.sh
-cd 2-Filter          && ./filter.sh
-cd 3-Body            && ./body.sh       # can run in parallel with step 4 on a separate machine
-cd 4-Face            && ./face.sh       # can run in parallel with step 3 on a separate machine
-cd 5-Merge           && ./mergePP.sh    # needs steps 3 and 4 to be complete
-cd 6-Captions        && ./caption.sh    # needs step 5
-cd 6b-Captions_augm  && ./caption.sh    # needs step 6
-# Step 7: open 7-Conversion_263/raw_pose_processing.ipynb and run cells in order (needs steps 5 and 6)
-```
 
 ---
 
@@ -59,19 +44,31 @@ bash download.sh   # downloads all model checkpoints (~10 GB)
 ### YouTube API key
 
 Step 1 uses the YouTube Data v3 API (free, 100 requests/day).
-
+```
 1. Generate a key at [Google Cloud Console](https://console.cloud.google.com/) - APIs & Services - Credentials
-2. Copy `.env.example` to `.env` at the repo root:
-```bash
-cp .env.example .env
-```
-3. Fill in your key in `.env`:
-```
-YOUTUBE_API_KEY=AIza...
+
+2. Copy your key in config.yml file in the corresponding section
+
+3. We advise to use a google account on firefox, and not abuse this script, otherwise you will get ip banned on your account by YouTube.
 ```
 
 ---
+## Quick start
 
+### All parameters are centralized in [`config.yml`](config.yml) at the root of the repo. Edit it before running anything.
+
+Run the steps in the following order. Steps 3 and 4 are independent and can run in parallel across multiple machines - each script uses a file-based locking system (`video_verif.py`) to avoid conflicts.
+
+```bash
+cd 1-Download        && ./download.sh
+cd 2-Filter          && ./filter.sh
+cd 3-Body            && ./body.sh       # can run in parallel with step 4 on a separate machine
+cd 4-Face            && ./face.sh       # can run in parallel with step 3 on a separate machine
+cd 5-Merge           && ./mergePP.sh    # needs steps 3 and 4 to be complete
+cd 6-Captions        && ./caption.sh    # needs step 5
+cd 6b-Captions_augm  && ./caption.sh    # needs step 6
+# Step 7: open 7-Conversion_263/raw_pose_processing.ipynb and run cells in order (needs steps 5 and 6)
+```
 ## Pipeline steps
 
 ### 1 - Download
@@ -214,8 +211,38 @@ Converts the merged NPZs into `.npy` files in HumanML3D 263D format.
 
 HumanML3D: [DOI:10.1109/CVPR52688.2022.00509](https://doi.org/10.1109/CVPR52688.2022.00509)
 
-# TODO: ADD DIFFERENT SCRIPTS HERE
-Open `7-Conversion_263/raw_pose_processing.ipynb` and run the cells in order.
+In order to convert, you will need to
+```
+Open `7-Conversion_263` folder
+
+Run the cells of `create_csv.ipynb` in order.
+Run the cells of `raw_pose_processing.ipynb` in order.
+Run the cells of `motion_representation.ipynb` in order.
+Run the cells of `split_data.ipynb` in order.
+```
+
+You will obtain a dataset with this folder organization:
+```
+.
+├── all.txt
+├── metadatas
+├── new_joints
+│   ├── example_1_0.npy
+│   └── example_2_0.npy
+├── new_joint_vecs
+│   ├── example_1_0.npy
+│   └── example_2_0.npy
+├── test.txt
+├── texts
+│   ├── example_1_0.txt
+│   └── example_2_0.txt
+├── train.txt
+├── train_val.txt
+└── val.txt
+```
+new_joints_vecs contains the 263D format. 
+Texts associated in texts folder are the `<Action>` sections of our npzs.
+
 
 Input: `5-Merge/mergepp/videosPPmerged/` + caption JSON files - Output: `7-Conversion_263/XmoPipe/`
 
@@ -268,3 +295,48 @@ Jupyter notebooks describing the dataset statistics.
 | ![GIF 1](assets/3_original.gif) | ![GIF 2](assets/tmp_3.gif) |
 | **Caption result** | **3D inference result** |
 | ![GIF 3](assets/3_caption.gif) | ![GIF 4](assets/3D_3.gif) |
+
+## Citation
+
+If you use this repository in your research or build upon our pipeline, please cite the **core upstream works** that are fundamental to this project:
+
+- **[SMIRK](https://github.com/georgeretsi/smirk)** for 3D facial expression reconstruction
+- **[GVHMR](https://github.com/zju3dv/GVHMR)** for world-grounded human motion recovery
+- **[Qwen3-VL](https://huggingface.co/Qwen)** for vision-language understanding components
+
+```bibtex
+@inproceedings{SMIRK:CVPR:2024,
+    title = {3D Facial Expressions through Analysis-by-Neural-Synthesis},
+    author = {Retsinas, George and Filntisis, Panagiotis P. and Danecek, Radek and Abrevaya, Victoria F. and Roussos, Anastasios and Bolkart, Timo and Maragos, Petros},
+    booktitle = {Conference on Computer Vision and Pattern Recognition (CVPR)},
+    year = {2024}
+}
+
+@inproceedings{shen2024gvhmr,
+    title = {World-Grounded Human Motion Recovery via Gravity-View Coordinates},
+    author = {Shen, Zehong and Pi, Huaijin and Xia, Yan and Cen, Zhi and Peng, Sida and Hu, Zechen and Bao, Hujun and Hu, Ruizhen and Zhou, Xiaowei},
+    booktitle = {SIGGRAPH Asia Conference Proceedings},
+    year = {2024}
+}
+
+@misc{bai2025qwen3vltechnicalreport,
+    title = {Qwen3-VL Technical Report},
+    author = {Shuai Bai and Yuxuan Cai and Ruizhe Chen and Keqin Chen and Xionghui Chen and Zesen Cheng and Lianghao Deng and Wei Ding and Chang Gao and Chunjiang Ge and Wenbin Ge and Zhifang Guo and Qidong Huang and Jie Huang and Fei Huang and Binyuan Hui and Shutong Jiang and Zhaohai Li and Mingsheng Li and Mei Li and Kaixin Li and Zicheng Lin and Junyang Lin and Xuejing Liu and Jiawei Liu and Chenglong Liu and Yang Liu and Dayiheng Liu and Shixuan Liu and Dunjie Lu and Ruilin Luo and Chenxu Lv and Rui Men and Lingchen Meng and Xuancheng Ren and Xingzhang Ren and Sibo Song and Yuchong Sun and Jun Tang and Jianhong Tu and Jianqiang Wan and Peng Wang and Pengfei Wang and Qiuyue Wang and Yuxuan Wang and Tianbao Xie and Yiheng Xu and Haiyang Xu and Jin Xu and Zhibo Yang and Mingkun Yang and Jianxin Yang and An Yang and Bowen Yu and Fei Zhang and Hang Zhang and Xi Zhang and Bo Zheng and Humen Zhong and Jingren Zhou and Fan Zhou and Jing Zhou and Yuanzhi Zhu and Ke Zhu},
+    year = {2025},
+    eprint = {2511.21631},
+    archivePrefix = {arXiv},
+    primaryClass = {cs.CV},
+    url = {https://arxiv.org/abs/2511.21631}
+}
+```
+## Acknowledgements
+
+This repository builds upon several outstanding open-source research projects and models:
+
+- [GVHMR](https://github.com/zju3dv/GVHMR)
+- [SMIRK](https://github.com/georgeretsi/smirk)
+- [HumanML3D](https://github.com/EricGuo5513/HumanML3D)
+- [SMPL-X](https://github.com/vchoutas/smplx)
+- [Qwen3-VL](https://huggingface.co/Qwen)
+
+We sincerely thank the authors and contributors of these projects for releasing their code, models, and research resources to the community. Their work made this repository possible.

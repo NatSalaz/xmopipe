@@ -1,8 +1,8 @@
 #!/bin/bash
 source ~/anaconda3/etc/profile.d/conda.sh
-conda activate qwen
+conda activate xmo-llm
 
-# Chemins lus depuis config.yml (sections captions.video_root / captions.npz_root)
+# Paths read from config.yml (sections captions.video_root / captions.npz_root)
 VIDEO_ROOT=$(python -c "import yaml; c=yaml.safe_load(open('../config.yml')); print(c['captions']['video_root'])")
 NPZ_ROOT=$(python -c "import yaml; c=yaml.safe_load(open('../config.yml')); print(c['captions']['npz_root'])")
 

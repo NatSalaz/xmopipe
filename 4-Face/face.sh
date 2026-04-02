@@ -1,10 +1,10 @@
 #!/bin/bash
 source ~/anaconda3/etc/profile.d/conda.sh
-conda activate smirk2
+conda activate xmo-3d
 echo "Active env : $(conda info --envs)"
 cd smirk
 
-# Chemins lus depuis config.yml (section face.input_dir / face.output_dir)
+# Paths read from config.yml (section face.input_dir / face.output_dir)
 INPUT_ROOT=$(python -c "import yaml; c=yaml.safe_load(open('../../config.yml')); print(c['face']['input_dir'])")
 OUTPUT_ROOT=$(python -c "import yaml; c=yaml.safe_load(open('../../config.yml')); print(c['face']['output_dir'])")
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 source ~/anaconda3/etc/profile.d/conda.sh
-conda activate filtertest
+conda activate xmo-3d
 echo "Active env : $(conda info --envs)"
 nvidia-smi
 nvcc --version
