@@ -286,6 +286,23 @@ XmoPipe/
 
 Jupyter notebooks describing the dataset statistics.
 
+### AE training
+
+Training is done by using train.py:
+`python train.py --config configs/xmo/rvqvae.yaml` for example to train a RVQ-VAE on xmopipe.
+You can look into and modify configurations directly in the config files. 
+
+In order to visualize a latent visualization of your saved experiments you will need to install:
+```
+pip install pyqt5
+pip install scikit-learn
+pip install umap-learn
+```
+
+Use example:
+`python latentvisu.py --config experiments/klvae_hml3dxmoI400_ld256/config.yaml --checkpoint experiments/klvae_hml3dxmoI400_ld256/checkpoints/best.pth --dataset t2m`
+In order to use this given configuration and checkpoint on the HumanML3D dataset
+
 ---
 
 ## Result examples

@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class ReConsLoss(nn.Module):
-    def __init__(self, recons_loss, nb_joints, dataset):
+    def __init__(self, recons_loss, nb_joints):
         super(ReConsLoss, self).__init__()
 
         if recons_loss == "l1":

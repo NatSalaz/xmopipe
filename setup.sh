@@ -61,6 +61,7 @@ pip install "git+https://github.com/CASIA-LMC-Lab/FastSAM.git@b4ed20c2fed75eadc5
 pip install "ultralytics==8.0.120"
 pip install "wordcloud"
 pip install "nltk"
+pip install "tensorboard"
 
 echo "Downloading spacy language model"
 python -m spacy download en_core_web_sm
