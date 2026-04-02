@@ -8,6 +8,48 @@ Multi-stage motion capture pipeline from YouTube videos, producing a dataset in 
 
 ---
 
+## Data
+
+Data is available at this link.
+NPZ data is defined like this: 
+
+```
+video_XXXX
+├── description_videos_video_XXXX.json
+├── metadata.txt
+├── video_XXXX_merged_scene_1.npz
+├── video_XXXX_merged_scene_2.npz
+├── video_XXXX_merged_scene_3.npz
+├── video_XXXX_merged_scene_4.npz
+├── video_XXXX_merged_scene_5.npz
+```
+json contains the textual descriptions for each video
+metadata.txt contains YT link and each section timestamp.
+
+NPZs contain extracted infos: 
+They contain 1 key namex 'body_Y' for each body each containing the following keys:
+
+```
+[model] | Type: str | Example: 'smplx2020'
+[expressions] | Type: numpy.ndarray | Example: shape: (77, 50)
+[trans] | Type: numpy.ndarray | Example: shape: (77, 3)
+[betas] | Type: numpy.ndarray | Example: shape: (77, 10)
+[poses] | Type: numpy.ndarray | Example: shape: (77, 165)
+[gender] | Type: str | Example: 'neutral'
+[cam_transl] | Type: numpy.ndarray | Example: shape: (77, 3)
+[emotions] | Type: numpy.ndarray | Example: shape: (77,)
+[emotions_conf] | Type: numpy.ndarray | Example: shape: (65, 7)
+[face_bbox_xyxy] | Type: numpy.ndarray | Example: shape: (65, 4)
+[flagged_frames] | Type: numpy.ndarray | Example: shape: (77,)
+[bbox_xyxy] | Type: numpy.ndarray | Example: shape: (77, 4)
+[contacts_conf] | Type: numpy.ndarray | Example: shape: (65, 6)
+[face_shape] | Type: numpy.ndarray | Example: shape: (65, 300)
+[fps] | Type: int | Example: 30
+[original_fps] | Type: int | Example: 25
+[start] | Type: int | Example: 0
+[stop] | Type: int | Example: 77
+```
+
 ## Installation
 
 ### Tested on
