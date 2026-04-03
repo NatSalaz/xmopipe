@@ -10,7 +10,8 @@ Multi-stage motion capture pipeline from YouTube videos, producing a dataset in 
 
 ## Data
 
-Data is available at this link.
+Data is available at this link: [URL TO DATA]
+
 NPZ data is defined like this: 
 
 ```
@@ -50,6 +51,8 @@ They contain 1 key namex 'body_Y' for each body each containing the following ke
 [stop] | Type: int | Example: 77
 ```
 
+NPYs contain data on HumanML3D format ==> 263D vectors and texts corresponding. The chosen texts associated with the motion are the texts contained in `<Action>` tags
+
 ## Installation
 
 ### Tested on
@@ -65,13 +68,13 @@ They contain 1 key namex 'body_Y' for each body each containing the following ke
 ### Prerequisites
 - [Anaconda](https://www.anaconda.com/download) or Miniconda
 - NVIDIA GPU with CUDA 12.1
-- FFmpeg (`sudo apt install ffmpeg`)
+- ffmpeg (`sudo apt install ffmpeg`)
 - [Ollama](https://ollama.com/) for the optional step 1 query generation (`YTPromptIdeas.py`)
 
 ### Quick install
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/NatSalaz/xmopipe.git
 cd xmopipe
 bash setup.sh      # creates xmo-3d and xmo-llm conda environments (~30 min)
 bash download.sh   # downloads all model checkpoints (~10 GB)
@@ -346,6 +349,18 @@ Use example:
 In order to use this given configuration and checkpoint on the HumanML3D dataset
 
 ---
+
+### Rendering
+
+In order to render NPZs, you have the Rendering folder containing several scripts to visualize SMPL-X data.
+An example file with 2 bodies is given in folder render_example.
+Use:
+```
+python visu.py --input render_example/example.npz --output example.mp4
+python visu.py --input render_example/example.npz --output example_skeleton.mp4 --skeleton
+python debug_visu_anim.py --npz render_example/example.npz
+```
+
 
 ## Result examples
 

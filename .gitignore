@@ -52,3 +52,4 @@ authoring/training_SMPL_masked/experiments
 ./3-Body/GVHMR/inputs/checkpoints/body_models/smpl/basicmodel_m_lbs_10_207_0_v1.0.0.pkl
 ./3-Body/GVHMR/inputs/checkpoints/body_models/smpl/basicModel_f_lbs_10_207_0_v1.0.0.pkl
 ./3-Body/GVHMR/inputs/checkpoints/dpvo/dpvo.pth
+findmodelstodl.sh
