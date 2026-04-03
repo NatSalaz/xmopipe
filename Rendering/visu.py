@@ -9,26 +9,20 @@ import argparse
 # from render_utils.fast_render import render_multi_person_with_overlay_skeleton
 from render_utils.scene_render import (
     render_multi_person_with_overlay,
-    # render_multi_person_with_overlay_skeleton,
+    render_multi_person_with_overlay_skeleton,
 )
 
 
 def main():
     parser = argparse.ArgumentParser(description="Render a .npz file to a mesh video.")
     parser.add_argument(
-        "--npz_file",
+        "--input",
         type=str,
         required=True,
         help="Path to the .npz file or directory containing .npz files",
     )
     parser.add_argument(
-        "--output_dir",
-        type=str,
-        required=True,
-        help="Directory to save the output videos",
-    )
-    parser.add_argument(
-        "--output_file",
+        "--output",
         type=str,
         required=True,
         help="Directory to save the output videos",
@@ -43,15 +37,15 @@ def main():
 
     if args.skeleton == True:
         render_multi_person_with_overlay_skeleton(
-            npz_file=args.npz_file,
-            output_dir=args.output_dir,
-            output_file=args.output_file,
+            npz_file=args.input,
+            output_dir=".",
+            output_file=args.output,
         )
     else:
         render_multi_person_with_overlay(
-            npz_file=args.npz_file,
-            output_dir=args.output_dir,
-            output_file=args.output_file,
+            npz_file=args.input,
+            output_dir=".",
+            output_file=args.output,
         )
 
 
