@@ -21,8 +21,8 @@ video_XXXX
 ├── video_XXXX_merged_scene_4.npz
 ├── video_XXXX_merged_scene_5.npz
 ```
-json contains the textual descriptions for each video
-metadata.txt contains YT link and each section timestamp.
+JSONs contains the textual descriptions for each video
+metadata.txt contains video link and each scene timestamp.
 
 NPZs contain extracted infos: 
 They contain 1 key namex 'body_Y' for each body each containing the following keys:
@@ -99,13 +99,20 @@ Step 1 uses the YouTube Data v3 API (free, 100 requests/day).
 Run the steps in the following order. Steps 3 and 4 are independent and can run in parallel across multiple machines - each script uses a file-based locking system (`video_verif.py`) to avoid conflicts.
 
 ```bash
-cd 1-Download        && ./download.sh
-cd 2-Filter          && ./filter.sh
-cd 3-Body            && ./body.sh       # can run in parallel with step 4 on a separate machine
-cd 4-Face            && ./face.sh       # can run in parallel with step 3 on a separate machine
-cd 5-Merge           && ./mergePP.sh    # needs steps 3 and 4 to be complete
-cd 6-Captions        && ./caption.sh    # needs step 5
-cd 6b-Captions_augm  && ./caption.sh    # needs step 6
+cd 1-Download        
+./download.sh
+cd 2-Filter          
+./filter.sh
+cd 3-Body            
+./body.sh       # can run in parallel with step 4 on a separate machine
+cd 4-Face            
+./face.sh       # can run in parallel with step 3 on a separate machine
+cd 5-Merge           
+./mergePP.sh    # needs steps 3 and 4 to be complete
+cd 6-Captions        
+./caption.sh    # needs step 5
+cd 6b-Captions_augm  
+./caption.sh    # needs step 6
 # Step 7: open 7-Conversion_263/raw_pose_processing.ipynb and run cells in order (needs steps 5 and 6)
 ```
 ## Pipeline steps
@@ -200,8 +207,10 @@ Input: `3-Body/GVHMR/out_body/` + `4-Face/smirk/out_face/` - Output: `5-Merge/me
 
 Or, if some NPZs were not merged correctly during steps 3/4:
 ```bash
-cd 3-Body/GVHMR && python post_merge_bodies.py --input_root <videos path> --npz_root <body npzs path>
-cd 4-Face/smirk && python post_merge_faces.py --input_root <videos path> --npz_root <face npzs path>
+cd 3-Body/GVHMR 
+python post_merge_bodies.py --input_root <videos path> --npz_root <body npzs path>
+cd 4-Face/smirk 
+python post_merge_faces.py --input_root <videos path> --npz_root <face npzs path>
 ```
 Then:
 ```bash
