@@ -1,16 +1,13 @@
 # XmoPipe
 
 Multi-stage motion capture pipeline from YouTube videos, producing a dataset in HumanML3D format (263D).
-
----
-
-
+Accepted at CASAXR 2026
 
 ---
 
 ## Data
 
-Data is available at this link: [URL TO DATA]
+Data is available at this link: `https://drive.google.com/drive/folders/1Tp9QsLZAoFEckvSTPw1VTI6ynk2UgFit?usp=sharing`
 
 NPZ data is defined like this: 
 
@@ -43,8 +40,6 @@ They contain 1 key namex 'body_Y' for each body each containing the following ke
 [face_bbox_xyxy] | Type: numpy.ndarray | Example: shape: (65, 4)
 [flagged_frames] | Type: numpy.ndarray | Example: shape: (77,)
 [bbox_xyxy] | Type: numpy.ndarray | Example: shape: (77, 4)
-[contacts_conf] | Type: numpy.ndarray | Example: shape: (65, 6)
-[face_shape] | Type: numpy.ndarray | Example: shape: (65, 300)
 [fps] | Type: int | Example: 30
 [original_fps] | Type: int | Example: 25
 [start] | Type: int | Example: 0
@@ -67,7 +62,6 @@ NPYs contain data on HumanML3D format ==> 263D vectors and texts corresponding. 
 
 ### Prerequisites
 - [Anaconda](https://www.anaconda.com/download) or Miniconda
-- NVIDIA GPU with CUDA 12.1
 - ffmpeg (`sudo apt install ffmpeg`)
 - [Ollama](https://ollama.com/) for the optional step 1 query generation (`YTPromptIdeas.py`)
 
@@ -81,7 +75,7 @@ bash download.sh   # downloads all model checkpoints (~10 GB)
 ```
 
 `setup.sh` creates two environments:
-- `xmo-3d` — steps 1–5 (Python 3.10, torch 2.3.0+cu121, pytorch3d)
+- `xmo-3d` — steps 1–5  + Rendering (Python 3.10, torch 2.3.0+cu121, pytorch3d)
 - `xmo-llm` — steps 6–6b (Python 3.11, torch 2.5.1+cu121)
 
 `download.sh` downloads checkpoints for GVHMR, SMIRK, FastSAM, and ResEmoteNet into the expected paths. Files already present are skipped.
