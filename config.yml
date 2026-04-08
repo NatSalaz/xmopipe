@@ -18,7 +18,7 @@
 
 download:
   # YouTube Data v3 API key (console.cloud.google.com -> APIs & Services -> Credentials)
-  youtube_api_key: "AIzaSyB24gu0D_JmnNduYoRwQsPpVX1m81qDdhA"
+  youtube_api_key: "YOUR_API_KEY"
 
   # Scraping (YTscrap.py)
   request_limit: 90           # Max API requests per day (free Google quota: 100)
