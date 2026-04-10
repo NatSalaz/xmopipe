@@ -189,15 +189,4 @@ outputs/
 test_pipeline/
 test0705/
 out_body/*
-
-# Ignore tout dans everynting in hmr4d
-hmr4d/*
-# But dont ignore utils
-!hmr4d/utils/
-# Ignore  all utils outside of preproc
-hmr4d/utils/*
-!hmr4d/utils/preproc/
-# Don't ignore preproc
-!hmr4d/utils/preproc/**
-!hmr4d/utils/configs/store_gvhmr.py
 third-party/
