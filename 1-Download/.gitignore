@@ -1,4 +1,4 @@
-cutVideos/
-scrapedVideos/
+cutVideos/*
+downloadedVideos/*
 .vscode
 __pycache__/

@@ -22,7 +22,6 @@ MoMADiff_modified
 training_SMPL/experiments*
 training_SMPL/models/parts_rvqvae
 KL_VAEstyles
-Rendering/render_utils
 Rendering/visus
 training_SMPL/dataset/*
 training_SMPL/checkpoints/

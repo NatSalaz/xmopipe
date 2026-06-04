@@ -3,7 +3,7 @@
 #  Edit this file to adapt the pipeline to your setup.
 #
 #  Sections:
-#    1 - download   : YouTube scraping and scene cutting
+#    1 - download   : YouTube downloading and scene cutting
 #    2 - filter     : Video filtering (YOLO pose, optical flow)
 #    3 - body       : Body pose estimation (GVHMR)
 #    4 - face       : Face expression and emotion (SMIRK + ResEmoteNet)
@@ -20,11 +20,11 @@ download:
   # YouTube Data v3 API key (console.cloud.google.com -> APIs & Services -> Credentials)
   youtube_api_key: "YOUR_API_KEY"
 
-  # Scraping (YTscrap.py)
+  # Downloading (YTdl.py)
   request_limit: 90           # Max API requests per day (free Google quota: 100)
   max_results_per_query: 20   # Max results returned per search query
   duration_minutes: 1        # Total video duration to download per run (minutes)
-  scraped_dir: "scrapedVideos"  # Scraping output folder (relative to 1-Download/)
+  downloaded_dir: "downloadedVideos"  # Downloading output folder (relative to 1-Download/)
   treated_file: "treated.txt"   # File tracking already downloaded videos
 
   # Scene cutting (YTcut.py)

@@ -6,9 +6,9 @@ conda activate xmo-3d
 # We have a script named YTPromptIdeas.py that can help you generate those ideas using an LLM.
 
 # Duration and paths are read from config.yml at the repo root.
-# You can still override them via CLI: python YTscrap.py <output_folder> <duration_in_minutes>
+# You can still override them via CLI: python YTdl.py <output_folder> <duration_in_minutes>
 
-python YTscrap.py --verbose
+python YTdl.py --verbose
 
 python YTcut.py --keep
 

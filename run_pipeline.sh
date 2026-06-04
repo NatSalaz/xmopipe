@@ -28,7 +28,7 @@ if [ -n "$THEME" ]; then
   echo "Generating query ideas for theme: $THEME"
   python YTPromptIdeas.py "$THEME"
 fi
-python YTscrap.py --verbose
+python YTdl.py --verbose
 python YTcut.py --keep
 
 # Step 2 - Filter 

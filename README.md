@@ -122,7 +122,7 @@ cd 6b-Captions_augm
 Downloads and cuts videos into scenes.
 
 - `YTPromptIdeas.py` - generates search query ideas using a local LLM (Ollama)
-- `YTscrap.py` - downloads videos via yt-dlp
+- `YTdl.py` - downloads videos via yt-dlp
 - `YTcut.py` - cuts scenes using PySceneDetect
 
 Output: `1-Download/cutVideos/`
@@ -134,7 +134,7 @@ Output: `1-Download/cutVideos/`
 Or step by step:
 ```bash
 python YTPromptIdeas.py <video_theme>
-python YTscrap.py --verbose
+python YTdl.py --verbose
 python YTcut.py [--keep] [--min-duration <seconds>] [--input-dir <dir>] [--output-dir <dir>]
 ```
 

@@ -94,8 +94,8 @@ def main():
     parser.add_argument(
         "--input-dir",
         type=str,
-        default=_cfg["scraped_dir"],
-        help="Input folder of videos with their metadatas as harvested as done with YTscrap.py.",
+        default=_cfg["downloaded_dir"],
+        help="Input folder of videos with their metadatas as harvested as done with YTdl.py.",
     )
     parser.add_argument(
         "--output-dir",
