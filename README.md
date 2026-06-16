@@ -80,6 +80,25 @@ bash download.sh   # downloads all model checkpoints (~10 GB)
 
 `download.sh` downloads checkpoints for GVHMR, SMIRK, FastSAM, and ResEmoteNet into the expected paths. Files already present are skipped.
 
+## Rendering data
+
+If you only want to visualize data, you can create the xmo-visu environment with these commandes:
+
+```
+conda env create -f xmo-visu.yml
+conda activate xmo-visu
+```
+
+In order to render NPZs, you have the Rendering folder containing several scripts to visualize SMPL-X data.
+An example file with 2 bodies is given in folder render_example.
+Use:
+```
+cd Rendering
+python visu.py --input render_example/example.npz --output example.mp4
+python visu.py --input render_example/example.npz --output example_skeleton.mp4 --skeleton
+python debug_visu_anim.py --npz render_example/example.npz
+```
+
 ### YouTube API key
 
 Step 1 uses the YouTube Data v3 API (free, 100 requests/day).
@@ -352,18 +371,6 @@ Use example:
 In order to use this given configuration and checkpoint on the HumanML3D dataset
 
 ---
-
-### Rendering
-
-In order to render NPZs, you have the Rendering folder containing several scripts to visualize SMPL-X data.
-An example file with 2 bodies is given in folder render_example.
-Use:
-```
-python visu.py --input render_example/example.npz --output example.mp4
-python visu.py --input render_example/example.npz --output example_skeleton.mp4 --skeleton
-python debug_visu_anim.py --npz render_example/example.npz
-```
-
 
 ## Result examples
 
