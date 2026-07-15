@@ -1,62 +1,62 @@
 # training_SMPL_ae
 
-Entraînement, évaluation et exploration d'**auto-encodeurs de mouvement** sur des représentations SMPL / HumanML3D (vecteurs de pose 263-D, format `new_joint_vecs`).
+Training, evaluation and exploration of **motion auto-encoders** on SMPL / HumanML3D representations (263-D pose vectors, `new_joint_vecs` format).
 
-Quatre familles de modèles partagent le même pipeline de données, d'entraînement et de losses :
+Four model families share the same data, training and loss pipeline:
 
-| `model_type` | Modèle | Espace latent |
-|--------------|--------|---------------|
-| `vae`    | VAE dense                          | vecteur continu |
-| `klvae`  | Auto-encodeur KL convolutionnel    | carte latente `(z_channels, T/down)` continue |
-| `vqvae`  | VQ-VAE                             | tokens discrets (codebook) |
-| `rvqvae` | Residual VQ-VAE                    | tokens discrets multi-quantizers |
+| `model_type` | Model | Latent space |
+|--------------|-------|--------------|
+| `vae`    | Dense VAE                       | continuous vector |
+| `klvae`  | Convolutional KL auto-encoder   | continuous latent map `(z_channels, T/down)` |
+| `vqvae`  | VQ-VAE                          | discrete tokens (codebook) |
+| `rvqvae` | Residual VQ-VAE                 | discrete tokens, multi-quantizer |
 
-Tout est piloté par des configs YAML (`configs/<dataset>/<model>.yaml`) ; le choix du modèle, du dataset et des losses en découle.
+Everything is driven by YAML configs (`configs/<dataset>/<model>.yaml`); the model, dataset and losses all follow from it.
 
 ## Structure
 
 ```
-train.py            # entraînement principal (config-driven)
-train_ar.py         # variante (ancienne signature de modèles)
-eval.py             # métriques de reconstruction (MPJPE / PA-MPJPE / ACCL)
-latentvisu.py       # viewer PyQt5 de l'espace latent  ← outil interactif
-latentspacevisu.py  # ancien script de visu latente (standalone)
+train.py            # main training (config-driven)
+train_ar.py         # variant (older model signatures)
+eval.py             # reconstruction metrics (MPJPE / PA-MPJPE / ACCL)
+latentvisu.py       # PyQt5 latent-space viewer  ← interactive tool
+latentspacevisu.py  # older standalone latent-visu script
 configs/            # <dataset>/<model>.yaml
-models/             # vae · klvae · vqvae · rvqvae + évaluateurs t2m
+models/             # vae · klvae · vqvae · rvqvae + t2m evaluators
 training/           # trainer.py, loss_manager.py, losses/
-data/motion_loader.py  # MotionDataset + DATALoader (fenêtrage, normalisation)
-latentspace/        # backend du viewer (encodage, PCA/t-SNE/UMAP, rendu Open3D)
-common/ utils/      # squelette, quaternions, recover_from_ric, métriques
-experiments/        # sorties d'entraînement (checkpoints, logs, tensorboard)
+data/motion_loader.py  # MotionDataset + DATALoader (windowing, normalization)
+latentspace/        # viewer backend (encoding, PCA/t-SNE/UMAP, Open3D rendering)
+common/ utils/      # skeleton, quaternions, recover_from_ric, metrics
+experiments/        # training outputs (checkpoints, logs, tensorboard)
 ```
 
-## Données
+## Data
 
-`MotionDataset` (dans [data/motion_loader.py](data/motion_loader.py)) charge des `.npy` de pose depuis `new_joint_vecs/`, découpe des fenêtres de `window_size` frames (64 par défaut) et normalise via `Mean.npy` / `Std.npy`. Les chemins des datasets (`t2m`, `xmo`, `idea400`, `hml3dxmo`, …) sont **codés en dur** dans le fichier — à adapter à la machine. On peut aussi passer `data_root` dans la config pour surcharger.
+`MotionDataset` (in [data/motion_loader.py](data/motion_loader.py)) loads pose `.npy` files from `new_joint_vecs/`, slices windows of `window_size` frames (64 by default) and normalizes with `Mean.npy` / `Std.npy`. Dataset paths (`t2m`, `xmo`, `idea400`, `hml3dxmo`, …) are **hard-coded** in the file — adapt them to your machine. You can also pass `data_root` in the config to override.
 
-## Commandes
+## Commands
 
-### Entraîner
+### Train
 
 ```bash
 python train.py --config configs/hml3d/klvae.yaml
 ```
 
-Options utiles :
+Useful options:
 
 ```bash
 python train.py --config configs/hml3d/rvqvae.yaml \
-    --exp-suffix run1 \        # suffixe du nom d'expérience
-    --batch-size 128 \         # override de la config
+    --exp-suffix run1 \        # experiment-name suffix
+    --batch-size 128 \         # config override
     --latent-dim 256 \
     --resume experiments/<exp>/checkpoints/latest.pth
 ```
 
-Sorties dans `experiments/<model>_<dataset>[_<suffix>]/` : `config.yaml`, `checkpoints/` (`latest.pth`, `best.pth`, `step_*.pth`) et logs TensorBoard (`tensorboard --logdir experiments`).
+Outputs land in `experiments/<model>_<dataset>[_<suffix>]/`: `config.yaml`, `checkpoints/` (`latest.pth`, `best.pth`, `step_*.pth`) and TensorBoard logs (`tensorboard --logdir experiments`).
 
-### Évaluer
+### Evaluate
 
-Métriques de reconstruction (denormalise, `recover_from_ric` → joints 3D, puis MPJPE / PA-MPJPE / erreur d'accélération) :
+Reconstruction metrics (denormalize, `recover_from_ric` → 3D joints, then MPJPE / PA-MPJPE / acceleration error):
 
 ```bash
 python eval.py --config configs/hml3d/klvae.yaml \
@@ -64,9 +64,9 @@ python eval.py --config configs/hml3d/klvae.yaml \
     --dataset t2m --batch-size 256
 ```
 
-> Les métriques perceptuelles (FID / diversité) sont présentes mais commentées : on travaille sur des fenêtres courtes de 64 frames.
+> Perceptual metrics (FID / diversity) are present but commented out: we work on short 64-frame windows.
 
-### `latentvisu` — explorer l'espace latent
+### `latentvisu` — explore the latent space
 
 ```bash
 python latentvisu.py --config configs/hml3d/klvae.yaml \
@@ -74,20 +74,20 @@ python latentvisu.py --config configs/hml3d/klvae.yaml \
     --dataset t2m
 ```
 
-Application **PyQt5 + Open3D** ([latentvisu.py](latentvisu.py) → [latentspace/viewer_app.py](latentspace/viewer_app.py)) qui :
+A **PyQt5 + Open3D** app ([latentvisu.py](latentvisu.py) → [latentspace/viewer_app.py](latentspace/viewer_app.py)) that:
 
-1. encode le split `test` du dataset pour construire un pool de latents ;
-2. le projette en **2D** via trois onglets : **PCA**, **t-SNE** et **UMAP** ;
-3. sur clic d'un point, décode le mouvement et l'**anime en 3D** (squelette Open3D) ;
-4. affiche en surimpression les **k plus proches voisins** (slider `K`, interpolation pondérée des latents pour `K>1`) et les mouvements originaux ;
-5. boutons pour afficher/masquer la **reconstruction** (vert) et les **originaux** (rouge).
+1. encodes the dataset `test` split to build a latent pool;
+2. projects it to **2D** across three tabs: **PCA**, **t-SNE** and **UMAP**;
+3. on clicking a point, decodes the motion and **animates it in 3D** (Open3D skeleton);
+4. overlays the **k nearest neighbors** (`K` slider, weighted latent interpolation for `K>1`) and the original motions;
+5. buttons to show/hide the **reconstruction** (green) and the **originals** (red).
 
-Le décodage s'adapte au type de modèle (indices de codebook pour vq/rvqvae, carte/vecteur latent continu pour vae/klvae). Réglages par défaut du viewer (dataset, sous-échantillonnage, perplexité t-SNE…) dans [latentspace/config.py](latentspace/config.py).
+Decoding adapts to the model type (codebook indices for vq/rvqvae, continuous latent map/vector for vae/klvae). Viewer defaults (dataset, subsampling, t-SNE perplexity…) live in [latentspace/config.py](latentspace/config.py).
 
 ## Notebooks
 
-`reconstruction_klvae.ipynb` et `reconstruction_rvqvae.ipynb` : inspection visuelle des reconstructions par modèle.
+`reconstruction_klvae.ipynb` and `reconstruction_rvqvae.ipynb`: visual inspection of per-model reconstructions.
 
-## Dépendances
+## Dependencies
 
-`torch`, `numpy`, `scipy`, `pyyaml`, `tqdm`, `PyQt5`, `open3d`, `scikit-learn` (PCA/t-SNE) et `umap-learn` (projection UMAP, lancée en sous-processus).
+`torch`, `numpy`, `scipy`, `pyyaml`, `tqdm`, `PyQt5`, `open3d`, `scikit-learn` (PCA/t-SNE) and `umap-learn` (UMAP projection, run in a subprocess).
