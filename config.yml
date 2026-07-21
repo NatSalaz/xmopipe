@@ -1,4 +1,3 @@
-# =============================================================
 #  XmoPipe - Global configuration file
 #  Edit this file to adapt the pipeline to your setup.
 #
@@ -9,12 +8,8 @@
 #    4 - face       : Face expression and emotion (SMIRK + ResEmoteNet)
 #    5 - merge      : Face/body fusion and post-processing
 #    6 - captions   : Video captioning (Qwen3-VL)
-# =============================================================
 
-
-##############################################################
 # SECTION 1 - Download videos
-##############################################################
 
 download:
   # YouTube Data v3 API key (console.cloud.google.com -> APIs & Services -> Credentials)
@@ -36,10 +31,7 @@ download:
   prompts_per_theme: 3          # Number of YouTube queries generated per theme
   ideas_file: "video_ideas.txt" # Output file for generated ideas (relative to 1-Download/)
 
-
-##############################################################
 # SECTION 2 - Filter videos
-##############################################################
 
 filter:
   # Folders (relative to 2-Filter/)
@@ -83,10 +75,7 @@ filter:
   # Multiprocessing
   workers_per_gpu: 4               # Number of parallel workers per GPU
 
-
-##############################################################
 # SECTION 3 - Body pose estimation (GVHMR)
-##############################################################
 
 body:
   # Folders (relative to 3-Body/GVHMR/)
@@ -115,10 +104,7 @@ body:
   max_no_reservation_cycles: 10  # Max cycles without an available video before stopping
   retry_wait_sec: 10             # Wait time (seconds) between retry cycles
 
-
-##############################################################
 # SECTION 4 - Face expression and emotion (SMIRK + ResEmoteNet)
-##############################################################
 
 face:
   # Folders (relative to 4-Face/smirk/)
@@ -165,10 +151,7 @@ face:
   # Tracking file
   tracking_file: "face_tracking"  # Name of the video tracking file
 
-
-##############################################################
 # SECTION 5 - Face/body fusion and post-processing (Merge)
-##############################################################
 
 merge:
   # Folders (relative to 5-Merge/mergepp/)
@@ -195,10 +178,7 @@ merge:
   gaussian_window: 5         # Island removal window before Gaussian smoothing
   gaussian_sigma: 1.0        # Gaussian filter sigma (expressions and jaw pose)
 
-
-##############################################################
 # SECTION 6 - Video captioning (Qwen3-VL)
-##############################################################
 
 captions:
   # Folders (relative to 6-Captions/)
@@ -224,10 +204,7 @@ captions:
   # Tracking file
   tracking_file: "qwen_tracking"  # Name of the video tracking file
 
-
-##############################################################
 # SECTION 6bis - Caption augmentation (Qwen3-4B)
-##############################################################
 
 captions_augm:
   # Folders (relative to 6bis-Captions_augm/)
@@ -242,10 +219,29 @@ captions_augm:
   num_samples: 10        # Number of NPZ samples to augment per run
   max_new_tokens: 32768  # Max tokens generated per augmentation call
 
-
-##############################################################
 # SECTION 7 - Conversion to HumanML3D/HumanTOMATO format
-##############################################################
 
 conversion:
   ex_fps: 30  # Target FPS for the converted motion data (must match merge.target_fps)
+
+# SECTION 9 - Auto-encoder training (training_SMPL_ae/)
+
+training:
+  # Folder holding the 263D datasets, relative to the repo root.
+  # Each dataset lives in a subfolder (see dataset_dirs below) and must contain:
+  #   new_joint_vecs/*.npy, texts/*.txt, Mean.npy, Std.npy,
+  #   train.txt, val.txt, test.txt, all.txt
+  # Ships as a symlink to the actual storage; a real folder works too.
+  dataset_dir: "./datasets"
+
+  # dataset_name (used in configs/<dataset>/<model>.yaml) -> subfolder of dataset_dir
+  dataset_dirs:
+    t2m: "HumanML3D"
+    xmo: "XmoPipe"
+    idea400:
+      path: "Idea400"
+      texts: "idea400_txt"  # this one does not use a plain texts/ subfolder
+    hml3dxmo: "HML3Dxmo"
+    xmoI400: "XmoI400"
+    hml3dI400: "HML3DI400"
+    hml3dxmoI400: "HML3DxmoI400"

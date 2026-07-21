@@ -32,7 +32,45 @@ experiments/        # training outputs (checkpoints, logs, tensorboard)
 
 ## Data
 
-`MotionDataset` (in [data/motion_loader.py](data/motion_loader.py)) loads pose `.npy` files from `new_joint_vecs/`, slices windows of `window_size` frames (64 by default) and normalizes with `Mean.npy` / `Std.npy`. Dataset paths (`t2m`, `xmo`, `idea400`, `hml3dxmo`, …) are **hard-coded** in the file — adapt them to your machine. You can also pass `data_root` in the config to override.
+`MotionDataset` (in [data/motion_loader.py](data/motion_loader.py)) loads pose `.npy` files from `new_joint_vecs/`, slices windows of `window_size` frames (64 by default) and normalizes with `Mean.npy` / `Std.npy`.
+
+### Where the datasets live
+
+Dataset locations come from the `training` section of the repo-root [config.yml](../config.yml):
+
+```yaml
+training:
+  dataset_dir: "./datasets"      # relative to the repo root
+  dataset_dirs:
+    t2m: "HumanML3D/HumanML3D"
+    xmo: "XmoPipe/XmoPipe"
+    ...
+```
+
+`dataset_dir` ships as a **symlink** to wherever the data actually sits (the datasets total ~200 GB, so don't copy them into the repo):
+
+```bash
+ln -s /path/to/your/datasets <repo-root>/datasets
+```
+
+A `dataset_name` in `configs/<dataset>/<model>.yaml` is looked up in `dataset_dirs`; setting `data_root` in that same config still overrides everything. To add a dataset, add one line to `dataset_dirs` — no Python to edit.
+
+Each dataset folder must contain:
+
+```
+new_joint_vecs/*.npy      # 263D vectors — what training actually reads
+texts/*.txt               # (`texts:` key in dataset_dirs if named otherwise)
+Mean.npy, Std.npy         # normalization stats
+train.txt val.txt test.txt all.txt   # split files, one motion id per line
+```
+
+### Normalization
+
+`Mean.npy` / `Std.npy` are read from the dataset folder itself — `<dataset_dir>/<dataset>/Mean.npy`, next to `new_joint_vecs/` — and applied per-window in `__getitem__` as `(x - mean) / std`. `inv_transform()` reverses it, and is called before `recover_from_ric` wherever 3D joints are needed — [utils/evaluate_klvae.py](utils/evaluate_klvae.py), [utils/eval_t2m.py](utils/eval_t2m.py), [latentspacevisu.py](latentspacevisu.py).
+
+There is **no** stats-computation step in this repo, and none is needed: the 263D representation is identical across all datasets, so HumanML3D's `Mean.npy` / `Std.npy` are copied into each dataset folder and reused as-is. A dataset without them will fail on `np.load` at construction time.
+
+Consequence worth knowing: a model trained on one dataset can be evaluated or decoded on another without renormalizing, since they all share the same stats. The latent viewer relies on this ([latent_manager.py:60-61](latentspace/latent_manager.py#L60-L61) loads the stats of the *training* dataset, not of the one being displayed).
 
 ## Commands
 
@@ -53,6 +91,8 @@ python train.py --config configs/hml3d/rvqvae.yaml \
 ```
 
 Outputs land in `experiments/<model>_<dataset>[_<suffix>]/`: `config.yaml`, `checkpoints/` (`latest.pth`, `best.pth`, `step_*.pth`) and TensorBoard logs (`tensorboard --logdir experiments`).
+
+Training is optional: pretrained weights for the four model families are on the [project drive](../README.md#data), laid out in exactly this structure. Unpack them into `experiments/` and go straight to `eval.py` or `latentvisu.py`, passing the `config.yaml` that ships with each experiment.
 
 ### Evaluate
 

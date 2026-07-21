@@ -2,10 +2,42 @@ import torch
 from torch.utils import data
 import numpy as np
 from os.path import join as pjoin
+from pathlib import Path
 import random
 import codecs as cs
+import yaml
 from tqdm import tqdm
 from torch.utils.data import Subset
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _load_dataset_registry():
+    """Read the dataset locations from the `training` section of config.yml."""
+    with open(REPO_ROOT / "config.yml", "r") as f:
+        cfg = yaml.safe_load(f)["training"]
+    return (REPO_ROOT / cfg["dataset_dir"]).resolve(), cfg["dataset_dirs"]
+
+
+DATASET_DIR, DATASET_DIRS = _load_dataset_registry()
+
+
+def dataset_root(dataset_name):
+    """Absolute path of a dataset, from its name in configs/<dataset>/<model>.yaml"""
+    try:
+        entry = DATASET_DIRS[dataset_name]
+    except KeyError:
+        raise ValueError(
+            f"Unknown dataset name: {dataset_name}. "
+            f"Known: {sorted(DATASET_DIRS)}. "
+            f"Add it under training.dataset_dirs in {REPO_ROOT / 'config.yml'}."
+        )
+    # An entry is either the subfolder, or {path: ..., texts: ...} when the
+    # texts do not sit in a plain `texts/` subfolder (Idea400).
+    subdir = entry["path"] if isinstance(entry, dict) else entry
+    texts = entry.get("texts", "texts") if isinstance(entry, dict) else "texts"
+    return str(DATASET_DIR / subdir), texts
 
 
 class MotionDataset(data.Dataset):
@@ -26,76 +58,27 @@ class MotionDataset(data.Dataset):
         self.deterministic = deterministic
         self.split = split
         self.normalized = normalized
-        if dataset_name == "t2m":
-            self.data_root = "/home/natsalaz/Documents/datasets/HumanML3D/HumanML3D"
-            self.motion_dir = pjoin(self.data_root, "new_joint_vecs")
-            self.text_dir = pjoin(self.data_root, "texts")
-            self.joints_num = 22
-            self.max_motion_length = 196
-            self.meta_dir = "./checkpoints/t2m/kl_vae_ver0-stable/meta"
-
-        elif dataset_name == "idea400":
-            self.data_root = "/home/natsalaz/Documents/datasets/Idea400"
-            self.motion_dir = pjoin(self.data_root, "new_joint_vecs")
-            self.text_dir = pjoin(self.data_root, "idea400_txt")
-            self.joints_num = 22
-            self.max_motion_length = 1027
-            self.meta_dir = "./checkpoints/t2m/kl_vae_ver0-stable/meta"
-
-        elif dataset_name == "xmo":
-            self.data_root = "/home/natsalaz/Documents/datasets/XmoPipe/XmoPipe"
-            self.motion_dir = pjoin(self.data_root, "new_joint_vecs")
-            self.text_dir = pjoin(self.data_root, "texts")
-            self.joints_num = 22
-            self.max_motion_length = 1027
-            self.meta_dir = "./checkpoints/xmo/meta"
-
-        elif dataset_name == "hml3dxmo":
-            self.data_root = "/home/natsalaz/Documents/datasets/HML3Dxmo"
-            self.motion_dir = pjoin(self.data_root, "new_joint_vecs")
-            self.text_dir = pjoin(self.data_root, "texts")
-            self.joints_num = 22
-            self.max_motion_length = 1027
-            self.meta_dir = "./checkpoints/hml3dxmo/meta"
-        elif dataset_name == "xmoI400":
-            self.data_root = "/home/natsalaz/Documents/datasets/XmoI400"
-            self.motion_dir = pjoin(self.data_root, "new_joint_vecs")
-            self.text_dir = pjoin(self.data_root, "texts")
-            self.joints_num = 22
-            self.max_motion_length = 1027
-            self.meta_dir = "./checkpoints/xmoI400/meta"
-        elif dataset_name == "hml3dxmoI400":
-            self.data_root = "/home/natsalaz/Documents/datasets/HML3DxmoI400"
-            self.motion_dir = pjoin(self.data_root, "new_joint_vecs")
-            self.text_dir = pjoin(self.data_root, "texts")
-            self.joints_num = 22
-            self.max_motion_length = 1027
-            self.meta_dir = "./checkpoints/hml3dxmoI400/meta"
-        elif dataset_name == "hml3dI400":
-            self.data_root = "/home/natsalaz/Documents/datasets/HML3DI400"
-            self.motion_dir = pjoin(self.data_root, "new_joint_vecs")
-            self.text_dir = pjoin(self.data_root, "texts")
-            self.joints_num = 22
-            self.max_motion_length = 1027
-            self.meta_dir = "./checkpoints/hml3dxmoI400/meta"
-        else:
-            raise ValueError(f"Unknown dataset name: {dataset_name}")
-
+        # `data_root` in the config wins over the registry in config.yml
         if data_root is not None:
-            self.data_root = data_root
-            self.motion_dir = pjoin(self.data_root, "new_joint_vecs")
-            self.text_dir = pjoin(self.data_root, "texts")
+            self.data_root, text_subdir = data_root, "texts"
+        else:
+            self.data_root, text_subdir = dataset_root(dataset_name)
 
-        joints_num = self.joints_num
+        self.motion_dir = pjoin(self.data_root, "new_joint_vecs")
+        self.text_dir = pjoin(self.data_root, text_subdir)
+        self.joints_num = 22
+
+        if not Path(self.motion_dir).is_dir():
+            raise FileNotFoundError(
+                f"No new_joint_vecs/ under {self.data_root} (dataset '{dataset_name}'). "
+                f"Check training.dataset_dir / training.dataset_dirs in "
+                f"{REPO_ROOT / 'config.yml'}."
+            )
 
         # print("mean and std taken from", self.data_root)
         mean = np.load(pjoin(self.data_root, "Mean.npy"))
         std = np.load(pjoin(self.data_root, "Std.npy"))
         split_file = pjoin(self.data_root, f"{self.split}.txt")
-        id_list = []
-        with cs.open(split_file, "r") as f:
-            for line in f.readlines():
-                id_list.append(line.strip())
 
         self.data = []
         # if "xmo" in self.dataset_name:

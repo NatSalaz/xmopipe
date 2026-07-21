@@ -1,13 +1,52 @@
 # XmoPipe
 
-Multi-stage motion capture pipeline from YouTube videos, producing a dataset in HumanML3D format (263D).
-Accepted at CASAXR 2026
+Multi-stage motion capture pipeline from YouTube videos, producing a dataset in SMPL format and giving a conversion to [HumanML3D](https://github.com/EricGuo5513/HumanML3D) format (263D) to train a Text-To-Motion model.
+Accepted at [CASAXR 2026](https://cgs-network.org/CASAXR26/)
 
 ---
 
 ## Data
 
 Data is available at this link: `https://drive.google.com/drive/folders/1Tp9QsLZAoFEckvSTPw1VTI6ynk2UgFit?usp=sharing`
+
+The same drive also hosts the **trained auto-encoder weights** (KL-VAE only but for each dataset)
+so you can reconstruct and explore the latent spaces without retraining anything. See
+[AE training](#ae-training) for where to put them.
+
+### Downloading the 263D dataset
+
+`download_data.sh` fetches the `Data_NPY` folder from that drive and installs it into `./datasets/`:
+
+```bash
+./download_data.sh                    # uses the default drive link
+./download_data.sh '<other link>'     # if the drive folder moved
+./download_data.sh '' /other/path     # elsewhere than ./datasets
+```
+
+Needs `gdown` (`pip install gdown`) and `unzip`. Allow **~120 GB of free space** while it runs:
+each archive is deleted as soon as it is extracted, but the largest one briefly coexists with its
+contents. The result is ~63 GB:
+
+```
+datasets/
+├── new_joint_vecs/*.npy   # 263D vectors, ~61 GB, 338k motions
+├── texts/*.txt            # captions
+├── metadatas/             # per-video metadata
+├── Mean.npy  Std.npy      # normalization stats
+└── train.txt  val.txt  test.txt  train_val.txt  all.txt
+```
+
+The script stops with an explicit error if `new_joint_vecs` comes back with 50 files or fewer:
+`gdown` caps folder downloads at 50 files, so a payload folder that is not zipped on the drive
+would otherwise install as a silently truncated dataset.
+
+The destination must match where the training code looks for the dataset, which is
+`training.dataset_dir` + `training.dataset_dirs.<name>` in [config.yml](config.yml). With the
+default `xmo: "XmoPipe"`, install it there rather than at the root of `datasets/`:
+
+```bash
+./download_data.sh '' ./datasets/XmoPipe
+```
 
 NPZ data is defined like this: 
 
@@ -46,7 +85,7 @@ They contain 1 key namex 'body_Y' for each body each containing the following ke
 [stop] | Type: int | Example: 77
 ```
 
-NPYs contain data on HumanML3D format ==> 263D vectors and texts corresponding. The chosen texts associated with the motion are the texts contained in `<Action>` tags
+NPYs contain data on [HumanML3D](https://github.com/EricGuo5513/HumanML3D) format ==> 263D vectors and texts corresponding. The chosen texts associated with the motion are the texts contained in `<Action>` tags
 
 ## Installation
 
@@ -70,8 +109,9 @@ NPYs contain data on HumanML3D format ==> 263D vectors and texts corresponding. 
 ```bash
 git clone https://github.com/NatSalaz/xmopipe.git
 cd xmopipe
-bash setup.sh      # creates xmo-3d and xmo-llm conda environments (~30 min)
-bash download.sh   # downloads all model checkpoints (~10 GB)
+bash setup.sh         # creates xmo-3d and xmo-llm conda environments (~30 min)
+bash download.sh      # downloads all model checkpoints (~10 GB)
+bash download_data.sh # optional: downloads the 263D dataset into ./datasets (~63 GB)
 ```
 
 `setup.sh` creates two environments:
@@ -79,6 +119,8 @@ bash download.sh   # downloads all model checkpoints (~10 GB)
 - `xmo-llm` — steps 6–6b (Python 3.11, torch 2.5.1+cu121)
 
 `download.sh` downloads checkpoints for GVHMR, SMIRK, FastSAM, and ResEmoteNet into the expected paths. Files already present are skipped.
+
+`download_data.sh` is only needed to train or evaluate the auto-encoders — running the pipeline itself produces its own data. See [Downloading the 263D dataset](#downloading-the-263d-dataset).
 
 ## Rendering data
 
@@ -147,6 +189,7 @@ Downloads and cuts videos into scenes.
 Output: `1-Download/cutVideos/`
 
 ```bash
+cd 1-Download
 ./download.sh
 ```
 
@@ -166,6 +209,7 @@ Some flags are written into the `metadata.txt` files when persons have positions
 Output: `2-Filter/filteredVideos/`
 
 ```bash
+cd 2-Filter
 ./filter.sh
 ```
 
@@ -184,6 +228,7 @@ GVHMR: [arXiv:2409.06662](https://arxiv.org/abs/2409.06662)
 Input: `2-Filter/filteredVideos/` - Output: `3-Body/GVHMR/out_body/`
 
 ```bash
+cd 3-Body
 ./body.sh
 ```
 
@@ -204,6 +249,7 @@ SMIRK: [arXiv:2404.04104](https://arxiv.org/abs/2404.04104) - ResEmoteNet: [DOI:
 Input: `2-Filter/filteredVideos/` - Output: `4-Face/smirk/out_face/`
 
 ```bash
+cd 4-Face
 ./face.sh
 ```
 
@@ -221,6 +267,7 @@ Fuses the face and body data from steps 3 and 4. `fusion_pipeline.py` assigns fa
 Input: `3-Body/GVHMR/out_body/` + `4-Face/smirk/out_face/` - Output: `5-Merge/mergepp/videosPPmerged/`
 
 ```bash
+cd 5-Merge
 ./mergePP.sh
 ```
 
@@ -245,6 +292,7 @@ Draws temporary person outlines with IDs on the videos (inspired by [arXiv:2410.
 Input: `2-Filter/filteredVideos/` + `5-Merge/mergepp/videosPPmerged/` - Output: JSON files alongside NPZs
 
 ```bash
+cd 6-Captions
 ./caption.sh
 ```
 
@@ -262,6 +310,7 @@ Takes the raw captions from step 6 and uses Qwen3-4B to generate rephrased versi
 Input: `5-Merge/mergepp/videosPPmerged/` - Output: `6b-Captions_augm/augm_txts/`
 
 ```bash
+cd 6b-Captions_augm
 ./caption.sh
 ```
 
@@ -358,6 +407,33 @@ Jupyter notebooks describing the dataset statistics.
 Training is done by using train.py:
 `python train.py --config configs/xmo/rvqvae.yaml` for example to train a RVQ-VAE on xmopipe.
 You can look into and modify configurations directly in the config files. 
+
+**Pretrained weights are available on the [drive](#data)**, so training is optional if you only
+want to evaluate or explore the latent spaces. Each experiment comes as a folder holding the
+config it was trained with and its checkpoints:
+
+```
+training_SMPL_ae/experiments/
+└── klvae_hml3dxmoI400_ld256/
+    ├── config.yaml
+    └── checkpoints/
+        ├── best.pth
+        └── latest.pth
+```
+
+Drop the downloaded folders under `training_SMPL_ae/experiments/` and they are picked up by
+`eval.py` and `latentvisu.py` as shown below. The dataset a model was trained on is part of its
+folder name, and its `config.yaml` is the one to pass to `--config`.
+
+Datasets are located through the `training` section of [config.yml](config.yml): `dataset_dir`
+points at the folder holding them (shipped as a symlink — the datasets are ~200 GB, do not copy
+them into the repo), and `dataset_dirs` maps each `dataset_name` to its subfolder. See
+[training_SMPL_ae/README.md](training_SMPL_ae/README.md#where-the-datasets-live) for the expected
+layout of a dataset folder.
+
+Each dataset folder carries its own `Mean.npy` / `Std.npy`, loaded from there and applied per
+window at training time. Since the 263D representation is the same for every dataset, these are
+simply HumanML3D's stats copied into each folder — there is no stats-computation step to run.
 
 In order to visualize a latent visualization of your saved experiments you will need to install:
 ```
