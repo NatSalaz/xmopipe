@@ -40,6 +40,10 @@ must be run from `Rendering/` unless you pass an absolute path.
 | [visu_glb.py](visu_glb.py) | animated `.glb` (Blender, three.js…) | `render_utils/glb_render.py` |
 | [visu_image.py](visu_image.py) | single frame as an image | broken import, see below |
 | [debug_visu_anim.py](debug_visu_anim.py) | interactive Open3D viewer | standalone (`open3d`, `smplx`) |
+| [debug_visu_263.py](debug_visu_263.py) | interactive Open3D viewer, **263D `.npy`** | standalone (`open3d`, `torch`) |
+
+Every script above reads the SMPL-X `.npz` scenes of step 5. `debug_visu_263.py` is the odd one
+out: it reads the HumanML3D 263D `.npy` files of step 7, the ones the auto-encoders train on.
 
 ### Examples
 
@@ -65,6 +69,9 @@ python visu_glb.py --input render_example/example.npz --output example.glb --max
 
 # interactive viewer (needs a display, unlike the others)
 python debug_visu_anim.py --npz render_example/example.npz
+
+# interactive viewer for 263D .npy
+python debug_visu_263.py --npy <dataset>/new_joint_vecs/000000.npy
 ```
 
 `visu.py` uses `--input/--output`; the other scripts use `--npz_file/--output_dir/--output_file`.
@@ -78,6 +85,41 @@ is a **filename**, and the output directory is hardcoded to `.` at
 Useful `visu_folder.py` flags: `--spacing_x/--spacing_z` (5.0) to space the grid,
 `--cam_elevation` (0.6) / `--cam_distance` (1.3), `--no_loop` to stop short sequences
 instead of looping them to the longest, `--no_labels` to drop the scene-name overlays.
+
+## `debug_visu_263.py` — 263D motions
+
+Same controls as `debug_visu_anim.py` (play/pause, prev/next, speed slider, left-drag to orbit,
+right-drag to pan, wheel to zoom, Shadows toggle), but it reads the 263D `.npy` of
+`new_joint_vecs/` instead of SMPL-X scenes.
+
+Four 263D samples ship in `render_example/` alongside the `.npz` ones.
+
+```bash
+# one motion
+python debug_visu_263.py --npy render_example/example.npy
+
+# overlay several: the point of the viewer, e.g. an original and its reconstruction
+python debug_visu_263.py --npy render_example/example.npy render_example/example2.npy
+
+# a slice, played slower
+python debug_visu_263.py --npy render_example/example.npy --start 30 --end 120 --fps 20
+
+# a normalized dump, e.g. straight out of a model
+python debug_visu_263.py --npy recon.npy --mean <dataset>/Mean.npy --std <dataset>/Std.npy
+```
+
+Files in `new_joint_vecs/` are stored **un-normalized**, so `--mean/--std` are only needed for
+model outputs (`MotionDataset` normalizes on the fly at training time). The two options go
+together.
+
+The 263D vectors encode joint positions only, so this renders the 22-joint skeleton as spheres and
+bones — there is no mesh without fitting SMPL back onto the joints, which is a per-sequence
+optimization far too slow for an interactive viewer. The skeleton is solid rather than drawn with
+lines precisely so it can be lit and cast shadows.
+
+Decoding reimplements `recover_from_ric` in-file rather than importing
+`training_SMPL_ae/utils/motion_process.py`, to keep the viewer standalone; it was checked to give
+bit-identical output on files from both HumanML3D and XmoPipe.
 
 ## Expected NPZ format
 
@@ -105,9 +147,8 @@ fps / original_fps / start / stop  ()  int64
 The emotion overlay reads `emotions`; disable it with `--no_emotion` on
 `visu_skeleton.py` when the field is absent or unreliable.
 
-Note this is **not** the 263D HumanML3D format used for auto-encoder training —
-that one is produced later, by step 7, and visualized from
-[../training_SMPL_ae/](../training_SMPL_ae/) instead.
+Note this is **not** the 263D HumanML3D format used for auto-encoder training — that one is
+produced later, by step 7, and viewed with [debug_visu_263.py](debug_visu_263.py) below.
 
 ## Contents
 
