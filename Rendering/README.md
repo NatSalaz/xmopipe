@@ -1,180 +1,119 @@
 # Rendering
 
-Visualization of the SMPL-X `.npz` files produced by step 5 of the pipeline
-(`5-Merge/mergepp/videosPPmerged/`): mesh or skeleton videos, single frames, and
-animated GLB export.
+Inspection tools for the two motion formats the pipeline produces: the SMPL-X `.npz` scenes from
+step 5, and the HumanML3D 263D `.npy` from step 7. None of this is part of the pipeline itself.
 
-Nothing here is part of the pipeline itself — these are inspection tools.
-
-## Environment
+## Setup
 
 ```bash
 conda env create -f ../xmo-visu.yml
 conda activate xmo-visu
 ```
 
-`xmo-3d` also works (it covers steps 1–5 plus rendering). Rendering is offscreen:
-every entry point sets `PYOPENGL_PLATFORM=egl` before importing anything, so a GPU
-without a display works, but an EGL-capable driver is required.
+`xmo-3d` works too. Rendering is offscreen (`PYOPENGL_PLATFORM=egl`), so you don't need a display,
+but you do need an EGL-capable driver.
 
-## SMPL-X model (required)
+You also need the SMPL-X model at `data/smplx_models/smplx/SMPLX_NEUTRAL_2020.npz`. Run
+`download.sh` at the repo root after the SMPL-X registration step and it will symlink the GVHMR
+copy for you. Run the scripts from `Rendering/`, otherwise pass `--model_folder`.
 
-All renderers need `data/smplx_models/smplx/SMPLX_NEUTRAL_2020.npz`. The filename is
-hardcoded in `render_utils/*.py`.
+## Scripts
 
-`download.sh` (step 3b) symlinks it to the GVHMR copy at
-`3-Body/GVHMR/inputs/checkpoints/body_models/smplx/SMPLX_NEUTRAL.npz` — same model.
-Run it after the SMPL-X registration step rather than placing the file by hand. See
-[data/smplx_models/smplx/add_SMPLX_NEUTRAL_2020npz.txt](data/smplx_models/smplx/add_SMPLX_NEUTRAL_2020npz.txt).
+| Script | Output |
+|---|---|
+| [visu.py](visu.py) | mesh or skeleton video of one scene |
+| [visu_skeleton.py](visu_skeleton.py) | skeleton video, more camera options |
+| [visu_folder.py](visu_folder.py) | grid video of every `.npz` in a folder |
+| [visu_glb.py](visu_glb.py) | animated `.glb` for Blender or three.js |
+| [visu_image.py](visu_image.py) | single frame as an image - **broken**, see below |
+| [debug_visu_anim.py](debug_visu_anim.py) | interactive viewer for `.npz` scenes |
+| [debug_visu_263.py](debug_visu_263.py) | interactive viewer for 263D `.npy` |
 
-Every renderer takes `--model_folder` (default `data/smplx_models`), so the scripts
-must be run from `Rendering/` unless you pass an absolute path.
-
-## Entry points
-
-| Script | Output | Backend |
-|---|---|---|
-| [visu.py](visu.py) | mesh or skeleton video of one scene | `render_utils/scene_render.py` |
-| [visu_skeleton.py](visu_skeleton.py) | skeleton video, more camera options | `render_utils/scene_render.py` |
-| [visu_folder.py](visu_folder.py) | grid video of every `.npz` in a folder | `render_utils/folder_render.py` |
-| [visu_glb.py](visu_glb.py) | animated `.glb` (Blender, three.js…) | `render_utils/glb_render.py` |
-| [visu_image.py](visu_image.py) | single frame as an image | broken import, see below |
-| [debug_visu_anim.py](debug_visu_anim.py) | interactive Open3D viewer | standalone (`open3d`, `smplx`) |
-| [debug_visu_263.py](debug_visu_263.py) | interactive Open3D viewer, **263D `.npy`** | standalone (`open3d`, `torch`) |
-
-Every script above reads the SMPL-X `.npz` scenes of step 5. `debug_visu_263.py` is the odd one
-out: it reads the HumanML3D 263D `.npy` files of step 7, the ones the auto-encoders train on.
-
-### Examples
+Samples to try them on live in `render_example/`.
 
 ```bash
 cd Rendering
 
-# mesh video
 python visu.py --input render_example/example.npz --output example.mp4
+python visu.py --input render_example/example.npz --output skel.mp4 --skeleton
 
-# skeleton only
-python visu.py --input render_example/example.npz --output example_skeleton.mp4 --skeleton
-
-# skeleton with camera control and a caption burnt in
-python visu_skeleton.py --npz_file render_example/example.npz --output_dir . \
+python visu_skeleton.py --npz_file render_example/example.npz --output_dir . 
     --output_file skel.mp4 --follow_0 --text_overlay "a person waves"
 
-# every scene of a folder, side by side
-python visu_folder.py --npz_file render_example --output_dir . --folder \
-    --resolution 1920x1080 --fps 30
+python visu_folder.py --npz_file render_example --output_dir . --folder --fps 30
 
-# animated GLB
-python visu_glb.py --input render_example/example.npz --output example.glb --max_frames 60
+python visu_image.py --npz_file render_example/example.npz --output_dir . --output_file test.jpg --frame 25 [--body number]
 
-# interactive viewer (needs a display, unlike the others)
+python visu_glb.py --input render_example/example.npz --output example.glb
+
 python debug_visu_anim.py --npz render_example/example.npz
-
-# interactive viewer for 263D .npy
-python debug_visu_263.py --npy <dataset>/new_joint_vecs/000000.npy
 ```
 
-`visu.py` uses `--input/--output`; the other scripts use `--npz_file/--output_dir/--output_file`.
-The inconsistency is historical.
+Two things to know. `visu.py` takes `--input/--output` while the others take
+`--npz_file/--output_dir/--output_file`. And `visu.py --output` is a filename, not a directory
+despite what its help says - the file always lands in the current folder.
 
-Careful with `visu.py --output`: despite its help text ("Directory to save the output videos") it
-is a **filename**, and the output directory is hardcoded to `.` at
-[visu.py:40](visu.py#L40) — the file always lands in the current directory. Pass
-`--output name.mp4`, not a folder.
+For `visu_folder.py`: `--spacing_x/--spacing_z` space out the grid, `--no_loop` stops short
+sequences instead of looping them, `--no_labels` hides the scene names.
 
-Useful `visu_folder.py` flags: `--spacing_x/--spacing_z` (5.0) to space the grid,
-`--cam_elevation` (0.6) / `--cam_distance` (1.3), `--no_loop` to stop short sequences
-instead of looping them to the longest, `--no_labels` to drop the scene-name overlays.
+## Viewing 263D motions
 
-## `debug_visu_263.py` — 263D motions
-
-Same controls as `debug_visu_anim.py` (play/pause, prev/next, speed slider, left-drag to orbit,
-right-drag to pan, wheel to zoom, Shadows toggle), but it reads the 263D `.npy` of
-`new_joint_vecs/` instead of SMPL-X scenes.
-
-Four 263D samples ship in `render_example/` alongside the `.npz` ones.
+`debug_visu_263.py` has the same controls as `debug_visu_anim.py` - play/pause, prev/next, speed,
+left-drag to orbit, right-drag to pan, wheel to zoom, shadows toggle.
 
 ```bash
 # one motion
 python debug_visu_263.py --npy render_example/example.npy
 
-# overlay several: the point of the viewer, e.g. an original and its reconstruction
+# overlay two motions (Just to remind, 263D starts at 0,0,0 so they will supeprose)
 python debug_visu_263.py --npy render_example/example.npy render_example/example2.npy
 
-# a slice, played slower
-python debug_visu_263.py --npy render_example/example.npy --start 30 --end 120 --fps 20
-
-# a normalized dump, e.g. straight out of a model
+# a model output, which needs normalization
 python debug_visu_263.py --npy recon.npy --mean <dataset>/Mean.npy --std <dataset>/Std.npy
 ```
 
-Files in `new_joint_vecs/` are stored **un-normalized**, so `--mean/--std` are only needed for
-model outputs (`MotionDataset` normalizes on the fly at training time). The two options go
-together.
+The files in `new_joint_vecs/` are stored un-normalized, so you only need `--mean/--std` for
+model outputs.
 
-The 263D vectors encode joint positions only, so this renders the 22-joint skeleton as spheres and
-bones — there is no mesh without fitting SMPL back onto the joints, which is a per-sequence
-optimization far too slow for an interactive viewer. The skeleton is solid rather than drawn with
-lines precisely so it can be lit and cast shadows.
+263D vectors carry joint positions and nothing else, so you get a 22-joint skeleton, not a mesh.
+Getting a mesh back would mean fitting SMPL onto the joints, which is far too slow to do live.
 
-Decoding reimplements `recover_from_ric` in-file rather than importing
-`training_SMPL_ae/utils/motion_process.py`, to keep the viewer standalone; it was checked to give
-bit-identical output on files from both HumanML3D and XmoPipe.
+## NPZ format
 
-## Expected NPZ format
-
-One key per person in the scene (`body_0`, `body_1`, …), each a pickled dict — so
-`np.load(..., allow_pickle=True)` and `d["body_0"].item()`. For a 74-frame scene:
+One key per person (`body_0`, `body_1`, …), each a pickled dict, so read them with
+`np.load(..., allow_pickle=True)` then `d["body_0"].item()`. For a T-frame scene:
 
 ```
 model            ()          'smplx'
 gender           ()          'neutral'
-poses            (74, 165)   float32   SMPL-X 2020, 55 joints x 3 (axis-angle)
-betas            (74, 10)    float32   body shape
-trans            (74, 3)     float32   root translation
-expressions      (74, 50)    float32   facial expression coefficients
-face_shape       (74, 300)   float32
-emotions         (74,)       '<U5'     label per frame, drives the overlay
-emotions_conf    (74, 7)     float32
-bbox_xyxy        (74, 4)     float32
-face_bbox_xyxy   (74, 4)     float32
-contacts_conf    (74, 6)     float32
-flagged_frames   (74,)       bool
-cam_transl       (74, 3)     float64
+poses            (T, 165)   float32   SMPL-X 2020, 55 joints x 3 (axis-angle)
+betas            (T, 10)    float32   body shape
+trans            (T, 3)     float32   root translation
+expressions      (T, 50)    float32   facial expression coefficients
+face_shape       (T, 300)   float32
+emotions         (T,)       '<U5'     label per frame, drives the overlay
+emotions_conf    (T, 7)     float32
+bbox_xyxy        (T, 4)     float32
+face_bbox_xyxy   (T, 4)     float32
+contacts_conf    (T, 6)     float32
+flagged_frames   (T,)       bool
+cam_transl       (T, 3)     float64
 fps / original_fps / start / stop  ()  int64
 ```
 
-The emotion overlay reads `emotions`; disable it with `--no_emotion` on
-`visu_skeleton.py` when the field is absent or unreliable.
+The overlay reads `emotions`; pass `--no_emotion` to `visu_skeleton.py` if that field is missing
+or unreliable.
 
-Note this is **not** the 263D HumanML3D format used for auto-encoder training — that one is
-produced later, by step 7, and viewed with [debug_visu_263.py](debug_visu_263.py) below.
+## Layout
 
-## Contents
+The `visu*.py` scripts are thin argparse wrappers around `render_utils/`: `scene_render.py` for a
+single scene, `folder_render.py` for the grid, `glb_render.py` for the GLB export.
+`image_render.py` is an older renderer nothing calls anymore.
 
-```
-visu*.py            CLI entry points (thin argparse wrappers)
-render_utils/
-  scene_render.py     one scene: render_multi_person_with_overlay,
-                      ..._skeleton, render_single_frame_mesh
-  folder_render.py    grid over a folder: render_folder_grid,
-                      load_all_scenes_from_folder
-  image_render.py     older single-scene renderer, currently unused
-  glb_render.py       export_glb_animation
-render_example/     sample NPZs (example.npz is the one kept in git)
-data/smplx_models/  SMPL-X model goes here (gitignored)
-```
-
-`.mp4`, `.png` and `.npz` are gitignored, with `render_example/example.npz` explicitly
-kept — rendering into the source folder will not dirty the tree.
+Videos and images are gitignored, so rendering into the source folder won't dirty the tree.
 
 ## Known issue
 
-[visu_image.py:10](visu_image.py#L10) imports `render_utils.fast_render_CL`, a module
-that does not exist in this repo, so the script fails immediately on import. The
-function it wants, `render_single_frame_mesh`, does exist in
-[render_utils/scene_render.py:510](render_utils/scene_render.py#L510) — the import
-appears to just point at a stale module name.
-
-`image_render.py` is likewise no longer referenced by any entry point; `scene_render.py`
-superseded it.
+[visu_image.py](visu_image.py) imports `render_utils.fast_render_CL`, which doesn't exist here, so
+it dies on import. The function it wants, `render_single_frame_mesh`, is in
+[render_utils/scene_render.py](render_utils/scene_render.py) - looks like a stale module name.

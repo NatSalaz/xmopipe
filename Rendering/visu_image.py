@@ -7,7 +7,7 @@ import argparse
 
 # from render_utils.fast_render import render_multi_person_with_overlay
 # from render_utils.fast_render import render_multi_person_with_overlay_skeleton
-from render_utils.fast_render_CL import render_single_frame_mesh
+from render_utils.scene_render import render_single_frame_mesh
 
 
 def main():
