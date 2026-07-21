@@ -1,7 +1,13 @@
-You need to add SMPLX_NEUTRAL_2020.npz here
+SMPLX_NEUTRAL_2020.npz goes here.
 
-You can download it from 
+You should not have to do this by hand: download.sh (step 3b) symlinks it to
+3-Body/GVHMR/inputs/checkpoints/body_models/smplx/SMPLX_NEUTRAL.npz, which is
+the same model. Run download.sh after the SMPLX registration step.
+
+To do it manually instead, download the model from
 https://smpl-x.is.tue.mpg.de/
+and drop it here under the name SMPLX_NEUTRAL_2020.npz (the name is hardcoded
+in Rendering/render_utils/*.py).
 
 Expressive Body Capture:
 3D Hands, Face, and Body from a Single Image
